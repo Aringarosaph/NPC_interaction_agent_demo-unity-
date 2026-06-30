@@ -34,3 +34,9 @@ curl -X POST http://127.0.0.1:8008/api/v1/dialogue \
   -H "Content-Type: application/json" \
   -d '{"schema_version":"dialogue_request.v1","session_id":"s1","player_id":"local_player","npc_id":"arknights_amiya","player_text":"你知道八重神子吗？","distance_m":2.0,"is_in_range":true,"world_state":{"location_id":"portfolio_whitebox_room","game_time_label":"demo","quest_stage":0,"relationship_score":0,"debug_enabled":true}}'
 ```
+
+Mock dialogue regression tests:
+
+```bash
+python -m unittest discover -s tests
+```

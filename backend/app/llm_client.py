@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import re
 from typing import Any, Dict, List
 from openai import AsyncOpenAI
 
@@ -30,14 +31,14 @@ class LlmClient:
             return self._mock_response(messages, fallback_name)
 
     def _mock_response(self, messages: List[Dict[str, str]], fallback_name: str) -> Dict[str, Any]:
-        user = messages[-1]["content"]
-        if "八重" in user or "阿米娅" in user or "今汐" in user or "Unity" in user or "AI" in user:
+        player_input = self._extract_player_input(messages[-1]["content"])
+        if "八重" in player_input or "阿米娅" in player_input or "今汐" in player_input or "Unity" in player_input or "AI" in player_input:
             text = "这件事我无法确认。"
-        elif "愿望" in user:
+        elif "愿望" in player_input:
             text = "请说。"
-        elif "源石" in user or "感染" in user:
+        elif "源石" in player_input or "感染" in player_input:
             text = "这需要谨慎对待。"
-        elif "轻小说" in user or "投稿" in user:
+        elif "轻小说" in player_input or "投稿" in player_input:
             text = "听起来有点意思。"
         else:
             text = "我在听。"
@@ -48,3 +49,10 @@ class LlmClient:
             "memory_candidates": [],
             "confidence": 0.5,
         }
+
+    @staticmethod
+    def _extract_player_input(user_content: str) -> str:
+        match = re.search(r"<PLAYER_INPUT>\s*(.*?)\s*</PLAYER_INPUT>", user_content, re.DOTALL)
+        if match:
+            return match.group(1)
+        return user_content

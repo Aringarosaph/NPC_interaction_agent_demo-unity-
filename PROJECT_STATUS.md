@@ -14,7 +14,7 @@
 
 - [x] Phase 00: repository initialized and source package organized.
 - [x] Phase 00: backend virtual environment created and health endpoint verified.
-- [ ] Phase 01: mock dialogue endpoint verified for all three NPCs.
+- [x] Phase 01: mock dialogue endpoint verified for all three NPCs.
 - [ ] Phase 02: retrieval debug endpoint and retrieval tests.
 - [ ] Phase 03: DeepSeek JSON output integration.
 - [ ] Phase 04: SQLite memory write/read flow.
@@ -44,3 +44,10 @@
 - 2026-06-30: Started FastAPI locally on `127.0.0.1:8008`.
 - 2026-06-30: `GET /api/v1/health` returned `{"ok":true,"service":"portfolio-npc-rag-agent"}`.
 - 2026-06-30: Mock dialogue for `arknights_amiya` asking about `八重神子` returned one utterance and `used_knowledge_ids=["amiya_boundary_other_worlds"]`.
+- 2026-06-30: Added `backend/tests/test_mock_dialogue.py` covering all three mock NPC responses and out-of-range schema safety.
+- 2026-06-30: Ran `python -m unittest discover -s tests`; 2 tests passed.
+- 2026-06-30: Ran `python -m compileall app tests` successfully.
+- 2026-06-30: Phase 01 live curl checks passed:
+  - `arknights_amiya` / `你知道八重神子吗？` hit `amiya_boundary_other_worlds`.
+  - `genshin_yae_miko` / `我想投稿轻小说。` hit `yae_publishing_house`.
+  - `wuwa_jinhsi` / `我有一个愿望。` hit `jinhsi_wish_custom`.
