@@ -5,16 +5,26 @@ using UnityEditor.SceneManagement;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using UnityEngine.SceneManagement;
+using UnityEngine.TextCore.LowLevel;
 using UnityEngine.UI;
 
 public static class WhiteboxSceneBuilder
 {
     private const string ScenePath = "Assets/Scenes/Scene_PortfolioNpcRag.unity";
+    private const string ChineseFontPath = "Assets/Fonts/NotoSansCJKsc-Regular.otf";
+    private const string ChineseFontAssetPath = "Assets/Fonts/NotoSansCJKsc-Regular SDF.asset";
+    private const string ChineseFontAssetName = "NotoSansCJKsc-Regular SDF";
+    private const int ChineseFontAtlasSize = 2048;
+    private const int ChineseFontSamplingPointSize = 90;
+    private const int ChineseFontAtlasPadding = 9;
+
+    private static TMP_FontAsset cachedChineseFontAsset;
 
     [MenuItem("NPC Demo/Build Whitebox Scene")]
     public static void BuildWhiteboxScene()
     {
         Directory.CreateDirectory("Assets/Scenes");
+        ResolveChineseFontAsset();
 
         Scene scene = EditorSceneManager.NewScene(NewSceneSetup.EmptyScene, NewSceneMode.Single);
         scene.name = "Scene_PortfolioNpcRag";
@@ -96,6 +106,7 @@ public static class WhiteboxSceneBuilder
         {
             throw new FileNotFoundException($"Whitebox scene does not exist at {ScenePath}.");
         }
+        TMP_FontAsset chineseFontAsset = ResolveChineseFontAsset();
 
         EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
 
@@ -119,6 +130,7 @@ public static class WhiteboxSceneBuilder
         PlayerChatInput chatInput = RequireComponent<PlayerChatInput>(dialogueSystem);
         Require(chatInput.playerController == playerController, "Chat input is not bound to the player controller.");
         Require(chatInput.followCamera == camera, "Chat input is not bound to the follow camera.");
+        ValidateTextFonts(chineseFontAsset);
 
         bool sceneInBuildSettings = false;
         foreach (EditorBuildSettingsScene buildScene in EditorBuildSettings.scenes)
@@ -132,6 +144,80 @@ public static class WhiteboxSceneBuilder
         Require(sceneInBuildSettings, "Whitebox scene is not enabled in Build Settings.");
 
         Debug.Log("Whitebox scene validation passed.");
+    }
+
+    private static TMP_FontAsset ResolveChineseFontAsset()
+    {
+        if (cachedChineseFontAsset != null)
+        {
+            return cachedChineseFontAsset;
+        }
+
+        TMP_FontAsset fontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ChineseFontAssetPath);
+        if (IsFontAssetUsable(fontAsset))
+        {
+            cachedChineseFontAsset = fontAsset;
+            return cachedChineseFontAsset;
+        }
+        if (fontAsset != null)
+        {
+            AssetDatabase.DeleteAsset(ChineseFontAssetPath);
+        }
+
+        Font sourceFont = AssetDatabase.LoadAssetAtPath<Font>(ChineseFontPath);
+        Require(sourceFont != null, $"Chinese source font was not found at {ChineseFontPath}.");
+
+        cachedChineseFontAsset = CreateChineseFontAsset(sourceFont);
+        Require(IsFontAssetUsable(cachedChineseFontAsset), $"Failed to create a usable TMP font asset at {ChineseFontAssetPath}.");
+        return cachedChineseFontAsset;
+    }
+
+    private static TMP_FontAsset CreateChineseFontAsset(Font sourceFont)
+    {
+        TMP_FontAsset fontAsset = TMP_FontAsset.CreateFontAsset(
+            sourceFont,
+            ChineseFontSamplingPointSize,
+            ChineseFontAtlasPadding,
+            GlyphRenderMode.SDFAA,
+            ChineseFontAtlasSize,
+            ChineseFontAtlasSize,
+            AtlasPopulationMode.Dynamic,
+            true);
+
+        Require(fontAsset != null, $"Unable to create TMP font asset from {ChineseFontPath}.");
+        fontAsset.name = ChineseFontAssetName;
+        fontAsset.atlasPopulationMode = AtlasPopulationMode.Dynamic;
+        fontAsset.isMultiAtlasTexturesEnabled = true;
+
+        AssetDatabase.CreateAsset(fontAsset, ChineseFontAssetPath);
+
+        if (fontAsset.atlasTextures != null && fontAsset.atlasTextures.Length > 0 && fontAsset.atlasTextures[0] != null)
+        {
+            fontAsset.atlasTextures[0].name = "NotoSansCJKsc-Regular Atlas";
+            AssetDatabase.AddObjectToAsset(fontAsset.atlasTextures[0], fontAsset);
+        }
+        if (fontAsset.material != null)
+        {
+            fontAsset.material.name = "NotoSansCJKsc-Regular Atlas Material";
+            AssetDatabase.AddObjectToAsset(fontAsset.material, fontAsset);
+        }
+        EditorUtility.SetDirty(fontAsset);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.ImportAsset(ChineseFontAssetPath);
+
+        TMP_FontAsset savedFontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ChineseFontAssetPath);
+        Require(savedFontAsset != null, $"Failed to load saved TMP font asset at {ChineseFontAssetPath}.");
+        return savedFontAsset;
+    }
+
+    private static bool IsFontAssetUsable(TMP_FontAsset fontAsset)
+    {
+        return fontAsset != null
+            && fontAsset.material != null
+            && fontAsset.material.mainTexture != null
+            && fontAsset.atlasTextures != null
+            && fontAsset.atlasTextures.Length > 0
+            && fontAsset.atlasTextures[0] != null;
     }
 
     private static NpcAgentMarker CreateNpc(string objectName, string npcId, string displayName, Vector3 position, Material material)
@@ -225,6 +311,7 @@ public static class WhiteboxSceneBuilder
         textRect.offsetMin = new Vector2(12f, 10f);
         textRect.offsetMax = new Vector2(-12f, -10f);
         TMP_Text text = textObject.AddComponent<TextMeshProUGUI>();
+        ApplyProjectFont(text);
         text.text = "";
         text.fontSize = 24f;
         text.alignment = TextAlignmentOptions.Center;
@@ -270,6 +357,7 @@ public static class WhiteboxSceneBuilder
         textRect.offsetMax = new Vector2(-8f, -2f);
 
         TMP_Text text = textObject.AddComponent<TextMeshProUGUI>();
+        ApplyProjectFont(text);
         text.text = displayName;
         text.fontSize = 23f;
         text.alignment = TextAlignmentOptions.Center;
@@ -306,6 +394,7 @@ public static class WhiteboxSceneBuilder
         rect.anchoredPosition = position;
         rect.sizeDelta = size;
         TMP_Text text = textObject.AddComponent<TextMeshProUGUI>();
+        ApplyProjectFont(text);
         text.text = value;
         text.fontSize = fontSize;
         text.alignment = TextAlignmentOptions.Center;
@@ -352,6 +441,22 @@ public static class WhiteboxSceneBuilder
         input.lineType = TMP_InputField.LineType.SingleLine;
         input.characterLimit = 120;
         return input;
+    }
+
+    private static void ApplyProjectFont(TMP_Text text)
+    {
+        if (text == null) return;
+        text.font = ResolveChineseFontAsset();
+    }
+
+    private static void ValidateTextFonts(TMP_FontAsset expectedFont)
+    {
+        TMP_Text[] texts = Object.FindObjectsByType<TMP_Text>(FindObjectsInactive.Include);
+        Require(texts.Length > 0, "Scene has no TMP text objects.");
+        foreach (TMP_Text text in texts)
+        {
+            Require(text.font == expectedFont, $"{text.name} is not using {ChineseFontAssetName}.");
+        }
     }
 
     private static Button CreateButton(Transform parent, string name, string label, Vector2 anchorMin, Vector2 anchorMax, Vector2 position, Vector2 size)

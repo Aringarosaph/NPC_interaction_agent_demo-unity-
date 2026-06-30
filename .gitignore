@@ -46,6 +46,8 @@ Recordings/
 *.opendb
 *.VC.db
 sysinfo.txt
+unity/PortfolioNpcRagWhitebox/Assets/TextMesh Pro.meta
+unity/PortfolioNpcRagWhitebox/Assets/TextMesh Pro/
 
 # macOS and editor noise
 .idea/
