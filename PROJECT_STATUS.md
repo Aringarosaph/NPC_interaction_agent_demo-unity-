@@ -19,7 +19,7 @@
 - [x] Phase 02: retrieval debug endpoint and retrieval tests.
 - [x] Phase 03: DeepSeek JSON output integration.
 - [x] Phase 04: SQLite memory write/read flow.
-- [x] Phase 05: Unity whitebox scene.
+- [x] Phase 05: Unity whitebox scene and Play Mode backend dialogue smoke.
 - [ ] Phase 06: portfolio polish and demo material.
 
 ## Notes For Continuity
@@ -104,3 +104,14 @@
 - 2026-06-30: Re-ran backend regression checks after Unity control refinements:
   - `python -m pytest -q`; 13 tests and 3 subtests passed.
   - `python -m unittest discover -s tests`; 9 tests passed.
+- 2026-06-30: Added MIT license for project code and documentation.
+- 2026-06-30: Added Noto Sans CJK SC Regular under SIL Open Font License 1.1 for Unity Chinese UI text, with local license/source notices.
+- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.BuildWhiteboxScene` completed successfully after Chinese font wiring.
+- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene` completed successfully with all TMP text bound to the Chinese font asset.
+- 2026-06-30: Backend live checks passed while serving on `127.0.0.1:8008`:
+  - `GET /api/v1/health` returned `{"ok":true,"service":"portfolio-npc-rag-agent"}`.
+  - `POST /api/v1/dialogue` for `arknights_amiya` returned 3 utterances with `used_knowledge_ids=["amiya_rhodes_mission"]`.
+- 2026-06-30: Added Unity Play Mode backend smoke:
+  - `BackendDialoguePlayModeSmoke.Run` opens `Scene_PortfolioNpcRag`, enters Play Mode, sends a real Unity client request to local FastAPI, validates the NPC response, and exits with a batchmode status code.
+  - Smoke run completed with `Unity backend Play Mode smoke passed.` and backend logged `POST /api/v1/dialogue HTTP/1.1" 200 OK`.
+- 2026-06-30: Added `WhiteboxSceneBuilder.ClearChineseFontDynamicData` so Play Mode smoke clears TMP runtime glyph cache before exit and keeps font asset diffs clean.

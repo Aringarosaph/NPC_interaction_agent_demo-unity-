@@ -146,6 +146,18 @@ public static class WhiteboxSceneBuilder
         Debug.Log("Whitebox scene validation passed.");
     }
 
+    [MenuItem("NPC Demo/Clear Chinese Font Dynamic Data")]
+    public static void ClearChineseFontDynamicData()
+    {
+        cachedChineseFontAsset = null;
+        TMP_FontAsset fontAsset = ResolveChineseFontAsset();
+        fontAsset.ClearFontAssetData(false);
+        EditorUtility.SetDirty(fontAsset);
+        AssetDatabase.SaveAssets();
+        AssetDatabase.ImportAsset(ChineseFontAssetPath);
+        cachedChineseFontAsset = AssetDatabase.LoadAssetAtPath<TMP_FontAsset>(ChineseFontAssetPath);
+    }
+
     private static TMP_FontAsset ResolveChineseFontAsset()
     {
         if (cachedChineseFontAsset != null)

@@ -53,6 +53,32 @@ Expected success marker:
 Whitebox scene validation passed.
 ```
 
+## Backend Play Mode Smoke
+
+Start the backend first:
+
+```bash
+cd backend
+source .venv/bin/activate
+python -m uvicorn app.main:app --host 127.0.0.1 --port 8008
+```
+
+Then run the Unity Play Mode smoke from the repository root:
+
+```bash
+"/Applications/Unity/Hub/Editor/6000.4.2f1/Unity.app/Contents/MacOS/Unity" \
+  -batchmode \
+  -projectPath "unity/PortfolioNpcRagWhitebox" \
+  -executeMethod BackendDialoguePlayModeSmoke.Run \
+  -logFile /tmp/npc_unity_playmode_backend_smoke.log
+```
+
+Expected success marker:
+
+```text
+Unity backend Play Mode smoke passed.
+```
+
 ## Runtime
 
 Start the backend first:

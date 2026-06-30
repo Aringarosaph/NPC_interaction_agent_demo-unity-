@@ -11,9 +11,14 @@ public class NpcDialogueClient : MonoBehaviour
     public SpeechBubbleController playerBubble;
     public float npcBubbleSeconds = 2.4f;
 
+    [System.NonSerialized] public DialogueResponseDto lastResponse;
+    [System.NonSerialized] public string lastError;
+
     public IEnumerator SendToNpc(NpcAgentMarker npc, float distance, string playerText)
     {
         if (npc == null || string.IsNullOrWhiteSpace(playerText)) yield break;
+        lastResponse = null;
+        lastError = null;
 
         if (playerBubble != null)
         {
@@ -43,12 +48,19 @@ public class NpcDialogueClient : MonoBehaviour
 
             if (req.result != UnityWebRequest.Result.Success)
             {
-                Debug.LogError($"NPC dialogue failed: {req.error} / {req.downloadHandler.text}");
+                lastError = $"{req.error} / {req.downloadHandler.text}";
+                Debug.LogError($"NPC dialogue failed: {lastError}");
                 yield break;
             }
 
             var resp = JsonUtility.FromJson<DialogueResponseDto>(req.downloadHandler.text);
-            if (resp == null || resp.utterances == null) yield break;
+            if (resp == null || resp.utterances == null)
+            {
+                lastError = $"NPC dialogue returned an invalid response: {req.downloadHandler.text}";
+                Debug.LogError(lastError);
+                yield break;
+            }
+            lastResponse = resp;
 
             var bubble = npc.bubbleAnchor != null ? npc.bubbleAnchor.GetComponentInChildren<SpeechBubbleController>() : npc.GetComponentInChildren<SpeechBubbleController>();
             foreach (var utt in resp.utterances)
