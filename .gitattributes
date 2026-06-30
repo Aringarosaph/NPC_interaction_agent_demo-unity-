@@ -1,0 +1,5 @@
+# Unity serializes many empty YAML scalar values as keys followed by a space.
+*.unity whitespace=-blank-at-eol
+*.asset whitespace=-blank-at-eol
+*.mat whitespace=-blank-at-eol
+*.meta whitespace=-blank-at-eol

@@ -7,6 +7,7 @@
 - Unity editor: `6000.4.2f1`
 - Python runtime: `/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14`
 - GitHub CLI: `/opt/homebrew/bin/gh`
+- Unity license: Unity Personal, verified by batchmode editor runs.
 - Public character names remain in use for this non-commercial portfolio demo.
 - Local secrets, runtime memory, virtual environments, and Unity generated files are not committed.
 
@@ -18,7 +19,7 @@
 - [x] Phase 02: retrieval debug endpoint and retrieval tests.
 - [x] Phase 03: DeepSeek JSON output integration.
 - [x] Phase 04: SQLite memory write/read flow.
-- [ ] Phase 05: Unity whitebox scene.
+- [x] Phase 05: Unity whitebox scene.
 - [ ] Phase 06: portfolio polish and demo material.
 
 ## Notes For Continuity
@@ -82,3 +83,15 @@
   - `debug/memories` for Yae Miko returned no Amiya player memory.
 - 2026-06-30: Ran `python -m pytest -q`; 13 tests and 3 subtests passed.
 - 2026-06-30: Ran `python -m unittest discover -s tests`; 9 tests passed.
+- 2026-06-30: Unity batchmode license check succeeded with Unity Personal.
+- 2026-06-30: Added `unity/PortfolioNpcRagWhitebox` Unity `6000.4.2f1` whitebox project.
+- 2026-06-30: Generated `Assets/Scenes/Scene_PortfolioNpcRag.unity` with floor, player capsule, three NPC capsules, third-person camera, dialogue UI, world-space bubbles, and local FastAPI endpoint binding.
+- 2026-06-30: Added Unity scene builder and validator menu entries:
+  - `NPC Demo > Build Whitebox Scene`
+  - `NPC Demo > Validate Whitebox Scene`
+- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.BuildWhiteboxScene` completed successfully.
+- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene` completed successfully with `Whitebox scene validation passed.`
+- 2026-06-30: Confirmed `.gitignore` excludes Unity `Library/`, `Temp/`, `Logs/`, and `UserSettings/` under the whitebox project.
+- 2026-06-30: Re-ran backend regression checks after Unity project generation:
+  - `python -m pytest -q`; 13 tests and 3 subtests passed.
+  - `python -m unittest discover -s tests`; 9 tests passed.
