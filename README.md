@@ -1,25 +1,25 @@
-# Portfolio NPC RAG Agent Demo
+# Unity NPC RAG Agent 作品集 Demo
 
-一个可运行的 Unity + FastAPI NPC 交互作品集 demo。项目演示了如何把角色资料、知识检索、短期/长期记忆、LLM JSON 输出和 Unity 气泡对话串成一条可验证链路。
+这是一个可运行的 Unity + FastAPI NPC 交互作品集 demo。项目展示了如何把角色资料、知识检索、本地记忆、LLM JSON 输出和 Unity 气泡对话串成一条完整、可验证的交互链路。
 
-当前白盒场景包含一名玩家和三名 NPC：阿米娅、八重神子、今汐。玩家靠近 NPC 后输入文本，Unity 会把请求发送到本地 FastAPI 后端；后端根据 NPC 资料、RAG 检索结果和本地记忆生成 1-3 句短回复，再由 Unity 逐句显示在 NPC 头顶气泡中。
+当前白盒场景包含一名玩家和三名 NPC：阿米娅、八重神子、今汐。玩家靠近 NPC 后输入文字，Unity 会把请求发送到本地 FastAPI 后端；后端根据 NPC 资料、RAG 检索结果和本地记忆生成 1-3 句短回复，再由 Unity 逐句显示在 NPC 头顶气泡中。
 
-## Project Highlights
+## 项目亮点
 
-- **Unity 可运行白盒**：地板、玩家胶囊、三个 NPC 胶囊、第三视角鼠标视角、WASD 移动、中文名字牌、玩家/NPC 气泡和输入框。
-- **本地 FastAPI 后端**：统一承接 Unity 请求，避免 Unity 直接暴露或调用 LLM API。
-- **RAG 角色知识检索**：每个 NPC 拥有 profile、knowledge chunks、dialogue examples 和 memory seed。
-- **可控 JSON 输出**：LLM 回复归一化为 `utterances`，包含 `text`、`emotion`、`action`、`delay_ms`。
+- **Unity 可运行白盒**：包含地板、玩家胶囊、三个 NPC 胶囊、第三视角鼠标视角、WASD 移动、中文名字牌、玩家/NPC 气泡和输入框。
+- **本地 FastAPI 后端**：Unity 只连接本地后端，不直接暴露或调用 LLM API。
+- **RAG 角色知识检索**：每个 NPC 都有独立的 profile、knowledge chunks、dialogue examples 和 memory seed。
+- **可控 JSON 输出**：后端把模型回复归一化为 `utterances`，字段包括 `text`、`emotion`、`action`、`delay_ms`，方便 Unity 稳定消费。
 - **本地 SQLite 记忆**：支持写入和召回玩家偏好，例如“以后叫我小林”。
-- **边界处理**：角色不会假装知道其他作品世界、Unity、AI、后端等出戏内容。
-- **自动化验证**：后端测试、Unity 场景 validator、Unity Play Mode backend smoke 均已落地。
-- **公开仓库安全**：`.env`、本地记忆数据库、虚拟环境、Unity `Library/` 和派生缓存均被忽略。
+- **角色边界处理**：角色不会假装知道其他作品世界、Unity、AI、后端等出戏内容。
+- **自动化验证**：已包含后端测试、Unity 场景 validator、Unity Play Mode backend smoke。
+- **公开仓库安全**：`.env`、本地记忆数据库、虚拟环境、Unity `Library/` 和派生缓存都已加入忽略规则。
 
-## Quick Start
+## 快速开始
 
-### 0. First-time Backend Setup
+### 0. 首次准备后端环境
 
-If this is a fresh clone, prepare the backend environment first:
+如果是第一次 clone 项目，先准备后端虚拟环境：
 
 ```bash
 cd backend
@@ -29,11 +29,17 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-For real LLM output, put `DEEPSEEK_API_KEY=...` in `backend/.env`. Without a key, the backend can use mock output for local development.
+如果希望使用真实 LLM 输出，在 `backend/.env` 中填写：
 
-### 1. Start Backend
+```text
+DEEPSEEK_API_KEY=你的 key
+```
 
-From the repository root:
+如果没有配置 key，后端也可以按配置使用 mock 输出，便于本地开发和演示基础链路。
+
+### 1. 启动后端
+
+在仓库根目录执行：
 
 ```bash
 cd backend
@@ -41,58 +47,58 @@ source .venv/bin/activate
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8008
 ```
 
-Expected output includes:
+看到类似以下内容，就说明后端已经启动：
 
 ```text
 Uvicorn running on http://127.0.0.1:8008
 ```
 
-Health check in another terminal:
+可以在另一个终端检查健康状态：
 
 ```bash
 curl http://127.0.0.1:8008/api/v1/health
 ```
 
-Expected response:
+预期响应：
 
 ```json
 {"ok":true,"service":"portfolio-npc-rag-agent"}
 ```
 
-### 2. Open Unity Project
+### 2. 打开 Unity 项目
 
-Open this folder with Unity `6000.4.2f1`:
+使用 Unity `6000.4.2f1` 打开：
 
 ```text
 unity/PortfolioNpcRagWhitebox
 ```
 
-Open or rebuild the scene:
+打开场景：
 
 ```text
 Assets/Scenes/Scene_PortfolioNpcRag.unity
 ```
 
-If the scene needs to be regenerated:
+如果需要重新生成白盒场景，在 Unity 菜单执行：
 
 ```text
 NPC Demo > Build Whitebox Scene
 ```
 
-### 3. Play
+### 3. 进入 Play Mode
 
-In Unity Play Mode:
+在 Unity Play Mode 中：
 
-- Move with `WASD` or arrow keys.
-- Look around with the mouse.
-- Approach an NPC until the current NPC label changes.
-- Press `Enter` to focus the input field.
-- Type a message, then press `Enter` or click `发送`.
-- Press `Esc` to leave typing mode and return to camera control.
+- 使用 `WASD` 或方向键移动。
+- 使用鼠标控制视角。
+- 靠近 NPC，直到底部当前 NPC 标签变化。
+- 按 `Enter` 聚焦输入框。
+- 输入文本后按 `Enter` 或点击 `发送`。
+- 按 `Esc` 退出输入模式，恢复移动和鼠标视角。
 
-## Backend On/Off
+## 本地后端开关
 
-Start backend:
+启动后端：
 
 ```bash
 cd backend
@@ -100,35 +106,35 @@ source .venv/bin/activate
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8008
 ```
 
-Stop backend:
+关闭后端：
 
-- In the terminal running uvicorn, press `Ctrl+C`.
-- If you are unsure whether it is still running:
+- 在运行 uvicorn 的终端按 `Ctrl+C`。
+- 如果不确定后端是否还在运行，可以检查 8008 端口：
 
 ```bash
 lsof -nP -iTCP:8008 -sTCP:LISTEN
 ```
 
-If a process is still listening and you want to stop it manually:
+如果仍有进程监听，并且你确认要手动停止它：
 
 ```bash
 kill <PID>
 ```
 
-Replace `<PID>` with the process id shown by `lsof`.
+把 `<PID>` 替换为 `lsof` 输出里的进程 id。
 
-## Demo Recording Flow
+## 录屏建议流程
 
-1. Start the backend and leave that terminal open.
-2. Open `unity/PortfolioNpcRagWhitebox` in Unity.
-3. Open `Assets/Scenes/Scene_PortfolioNpcRag.unity`.
-4. Enter Play Mode.
-5. Walk to 阿米娅 and ask about 罗德岛 or 源石病.
-6. Walk to 八重神子 and ask about 投稿 or 轻小说.
-7. Walk to 今汐 and ask about 愿望 or 今州.
-8. Optional memory demo: tell one NPC `以后叫我小林`, then ask `你记得怎么叫我吗？`.
+1. 启动后端，并保持终端窗口打开。
+2. 用 Unity 打开 `unity/PortfolioNpcRagWhitebox`。
+3. 打开 `Assets/Scenes/Scene_PortfolioNpcRag.unity`。
+4. 进入 Play Mode。
+5. 走到阿米娅旁边，询问罗德岛或源石病相关问题。
+6. 走到八重神子旁边，询问投稿或轻小说相关问题。
+7. 走到今汐旁边，询问愿望或今州相关问题。
+8. 可选展示记忆能力：对某个 NPC 说 `以后叫我小林`，然后问 `你记得怎么叫我吗？`。
 
-Good short prompts:
+可直接使用的短提示词：
 
 ```text
 阿米娅，罗德岛的使命是什么？
@@ -139,7 +145,7 @@ Good short prompts:
 你记得怎么叫我吗？
 ```
 
-## API Example
+## API 示例
 
 ```bash
 curl -X POST http://127.0.0.1:8008/api/v1/dialogue \
@@ -147,7 +153,7 @@ curl -X POST http://127.0.0.1:8008/api/v1/dialogue \
   -d '{"schema_version":"dialogue_request.v1","session_id":"demo","player_id":"local_player","npc_id":"arknights_amiya","player_text":"阿米娅，罗德岛的使命是什么？","distance_m":1.5,"is_in_range":true,"world_state":{"location_id":"portfolio_whitebox_room","game_time_label":"demo","quest_stage":0,"relationship_score":0,"debug_enabled":true}}'
 ```
 
-The response shape is stable for Unity:
+后端会返回 Unity 稳定消费的结构：
 
 ```json
 {
@@ -171,9 +177,9 @@ The response shape is stable for Unity:
 }
 ```
 
-## Validation
+## 验证方式
 
-Backend tests:
+后端测试：
 
 ```bash
 cd backend
@@ -182,7 +188,7 @@ python -m pytest -q
 python -m unittest discover -s tests
 ```
 
-Unity scene validation from repository root:
+Unity 场景校验，在仓库根目录执行：
 
 ```bash
 "/Applications/Unity/Hub/Editor/6000.4.2f1/Unity.app/Contents/MacOS/Unity" \
@@ -193,7 +199,7 @@ Unity scene validation from repository root:
   -logFile -
 ```
 
-Unity Play Mode backend smoke, with backend already running:
+后端已启动时，可以运行 Unity Play Mode 联调 smoke：
 
 ```bash
 "/Applications/Unity/Hub/Editor/6000.4.2f1/Unity.app/Contents/MacOS/Unity" \
@@ -203,15 +209,15 @@ Unity Play Mode backend smoke, with backend already running:
   -logFile /tmp/npc_unity_playmode_backend_smoke.log
 ```
 
-Expected success marker:
+预期成功标记：
 
 ```text
 Unity backend Play Mode smoke passed.
 ```
 
-## Repository Layout
+## 目录结构
 
-- `backend/`：FastAPI 服务、RAG 编排、LLM client、本地记忆、测试。
+- `backend/`：FastAPI 服务、RAG 编排、LLM client、本地记忆和测试。
 - `unity/PortfolioNpcRagWhitebox/`：Unity 6000.4.2f1 白盒项目。
 - `data/npcs/`：三名 NPC 的 profile、knowledge、examples、memory seed。
 - `schemas/`：Unity 与后端共用的数据契约。
@@ -220,24 +226,24 @@ Unity backend Play Mode smoke passed.
 - `eval/`：角色、知识边界、短句输出、记忆测试用例。
 - `codex_tasks/`：分阶段开发任务记录。
 
-## Local Configuration
+## 本地配置
 
-For real DeepSeek output, set `DEEPSEEK_API_KEY` in `backend/.env`. This file is ignored by git.
+真实 DeepSeek 输出需要在 `backend/.env` 中设置 `DEEPSEEK_API_KEY`。该文件已被 git 忽略，不会提交到公开仓库。
 
-If no key is configured, the backend can fall back to mock output for local development according to `MOCK_LLM_WHEN_NO_KEY`.
+如果没有配置 key，后端可以根据 `MOCK_LLM_WHEN_NO_KEY` 使用 mock 输出，方便本地开发。
 
-The verified local runtime used during development:
+当前开发验证过的本地环境：
 
 - Python `3.14.6`
 - Unity `6000.4.2f1`
-- Backend URL `http://127.0.0.1:8008`
+- 后端地址 `http://127.0.0.1:8008`
 
-## Portfolio And Copyright Note
+## 作品集与版权说明
 
-The character material in this repository is summarized and rewritten for a non-commercial technical portfolio demo. The project does not include official images, voice, models, or long copied dialogue. Character IP belongs to the original rights holders.
+本仓库中的角色资料是为非商用技术作品集 demo 做的摘要化、改写化整理。项目不包含官方图片、语音、模型或大段复制台词。角色 IP 归原权利方所有。
 
 ## License
 
-Project code and documentation are released under the MIT License. See `LICENSE`.
+项目代码和文档使用 MIT License，见 `LICENSE`。
 
-Bundled third-party assets keep their own licenses. See `THIRD_PARTY_NOTICES.md`.
+随仓库附带的第三方资源保留其原有许可证，见 `THIRD_PARTY_NOTICES.md`。
