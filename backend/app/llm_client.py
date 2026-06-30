@@ -44,8 +44,13 @@ class LlmClient:
             return self._mock_response(messages, fallback_name, confidence=0.25)
 
     def _mock_response(self, messages: List[Dict[str, str]], fallback_name: str, confidence: float = 0.5) -> Dict[str, Any]:
-        player_input = self._extract_player_input(messages[-1]["content"])
-        if "八重" in player_input or "阿米娅" in player_input or "今汐" in player_input or "Unity" in player_input or "AI" in player_input:
+        user_content = messages[-1]["content"]
+        player_input = self._extract_tag(user_content, "PLAYER_INPUT")
+        npc_memory = self._extract_tag(user_content, "NPC_MEMORY")
+        remembered_name = self._extract_preferred_name(npc_memory)
+        if remembered_name and "记得" in player_input and ("叫" in player_input or "称呼" in player_input):
+            text = f"我记得，{remembered_name}。"
+        elif "八重" in player_input or "阿米娅" in player_input or "今汐" in player_input or "Unity" in player_input or "AI" in player_input:
             text = "这件事我无法确认。"
         elif "愿望" in player_input:
             text = "请说。"
@@ -65,7 +70,23 @@ class LlmClient:
 
     @staticmethod
     def _extract_player_input(user_content: str) -> str:
+        return LlmClient._extract_tag(user_content, "PLAYER_INPUT")
+
+    @staticmethod
+    def _extract_tag(user_content: str, tag: str) -> str:
         match = re.search(r"<PLAYER_INPUT>\s*(.*?)\s*</PLAYER_INPUT>", user_content, re.DOTALL)
+        if tag != "PLAYER_INPUT":
+            match = re.search(rf"<{tag}>\s*(.*?)\s*</{tag}>", user_content, re.DOTALL)
         if match:
             return match.group(1)
         return user_content
+
+    @staticmethod
+    def _extract_preferred_name(memory_context: str) -> str | None:
+        match = re.search(r"称呼(?:自己)?为([A-Za-z0-9_\u4e00-\u9fff]{1,12})", memory_context)
+        if match:
+            return match.group(1)
+        match = re.search(r"叫我([A-Za-z0-9_\u4e00-\u9fff]{1,12})", memory_context)
+        if match:
+            return match.group(1)
+        return None

@@ -7,7 +7,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, List, Any
 
-from .models import MemorySnippet
+from .models import MemorySnippet, MemoryDebugRecord
 from .config import BACKEND_DIR
 
 
@@ -51,6 +51,9 @@ class MemoryStore:
         for r in seed_pack.get("records", []):
             self.upsert_record(r)
 
+    def close(self) -> None:
+        self.conn.close()
+
     def upsert_record(self, r: Dict[str, Any]) -> None:
         self.conn.execute(
             """
@@ -75,17 +78,43 @@ class MemoryStore:
             (npc_id, player_id),
         ).fetchall()
         q = query.lower()
+        query_tokens = self._query_tokens(q)
         scored = []
         for row in rows:
-            text = " ".join([row["summary"], row["detail"], row["retrieval_keywords"]]).lower()
+            keywords = self._json_list(row["retrieval_keywords"])
+            text = " ".join([row["summary"], row["detail"], " ".join(keywords)]).lower()
             score = 0.0
-            for token in self._query_tokens(q):
+            for keyword in keywords:
+                if keyword and keyword.lower() in q:
+                    score += 2.0
+            for token in query_tokens:
                 if token and token in text:
                     score += 1.0
             score += float(row["salience"]) * 0.2
             scored.append((score, row))
         scored.sort(key=lambda x: x[0], reverse=True)
         return [MemorySnippet(memory_id=r["memory_id"], summary=r["summary"], detail=r["detail"], score=s) for s, r in scored[:limit]]
+
+    def list_records(self, npc_id: str, player_id: str, include_default: bool = True) -> List[MemoryDebugRecord]:
+        if include_default:
+            rows = self.conn.execute(
+                """
+                SELECT * FROM memories
+                WHERE npc_id = ? AND status = 'active' AND (player_id = ? OR player_id = '__default__')
+                ORDER BY write_protected ASC, salience DESC, last_seen_at DESC
+                """,
+                (npc_id, player_id),
+            ).fetchall()
+        else:
+            rows = self.conn.execute(
+                """
+                SELECT * FROM memories
+                WHERE npc_id = ? AND player_id = ? AND status = 'active'
+                ORDER BY salience DESC, last_seen_at DESC
+                """,
+                (npc_id, player_id),
+            ).fetchall()
+        return [self._row_to_debug_record(row) for row in rows]
 
     def write_candidate(self, npc_id: str, player_id: str, candidate: Dict[str, Any], source_turn_id: str) -> str | None:
         if not candidate or not candidate.get("summary"):
@@ -94,7 +123,7 @@ class MemoryStore:
         if memory_type not in {"promise", "preference", "relationship", "event", "fact"}:
             return None
         now = datetime.now(timezone.utc).isoformat()
-        memory_id = f"mem_{npc_id}_{uuid.uuid4().hex[:12]}"
+        memory_id = candidate.get("memory_id") or f"mem_{npc_id}_{uuid.uuid4().hex[:12]}"
         record = {
             "memory_id": memory_id,
             "npc_id": npc_id,
@@ -120,3 +149,40 @@ class MemoryStore:
     @staticmethod
     def _query_tokens(q: str) -> List[str]:
         return [t for t in q.replace("，", " ").replace("。", " ").replace("？", " ").replace("！", " ").split() if t]
+
+    @staticmethod
+    def _json_list(raw: str) -> List[str]:
+        try:
+            value = json.loads(raw)
+        except json.JSONDecodeError:
+            return []
+        return value if isinstance(value, list) else []
+
+    @staticmethod
+    def _json_dict(raw: str) -> Dict[str, Any]:
+        try:
+            value = json.loads(raw)
+        except json.JSONDecodeError:
+            return {}
+        return value if isinstance(value, dict) else {}
+
+    def _row_to_debug_record(self, row: sqlite3.Row) -> MemoryDebugRecord:
+        return MemoryDebugRecord(
+            memory_id=row["memory_id"],
+            npc_id=row["npc_id"],
+            player_id=row["player_id"],
+            memory_type=row["memory_type"],
+            summary=row["summary"],
+            detail=row["detail"],
+            salience=float(row["salience"]),
+            confidence=float(row["confidence"]),
+            created_at=row["created_at"],
+            last_seen_at=row["last_seen_at"],
+            decay_policy=row["decay_policy"],
+            expires_at=row["expires_at"],
+            source_turn_id=row["source_turn_id"],
+            write_protected=bool(row["write_protected"]),
+            visibility=self._json_dict(row["visibility"]),
+            retrieval_keywords=self._json_list(row["retrieval_keywords"]),
+            status=row["status"],
+        )

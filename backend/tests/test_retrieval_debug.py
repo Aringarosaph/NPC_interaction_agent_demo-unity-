@@ -42,3 +42,26 @@ def test_debug_retrieve_rejects_unknown_npc() -> None:
     )
 
     assert response.status_code == 404
+
+
+def test_debug_retrieve_returns_no_chunks_for_unrelated_query() -> None:
+    response = client.get(
+        "/api/v1/debug/retrieve",
+        params={"npc_id": "arknights_amiya", "q": "香蕉披萨"},
+    )
+
+    assert response.status_code == 200, response.text
+    assert response.json()["chunks"] == []
+
+
+def test_debug_memories_endpoint_returns_seed_memories() -> None:
+    response = client.get(
+        "/api/v1/debug/memories",
+        params={"npc_id": "arknights_amiya", "player_id": "local_player"},
+    )
+
+    assert response.status_code == 200, response.text
+    body = response.json()
+    assert body["npc_id"] == "arknights_amiya"
+    assert body["player_id"] == "local_player"
+    assert any(memory["memory_id"] == "seed_arknights_amiya_default_relation" for memory in body["memories"])

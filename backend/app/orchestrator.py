@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 import uuid
 from typing import Dict, List
 
@@ -9,12 +10,12 @@ from .memory_store import MemoryStore
 from .prompt_builder import PromptBuilder
 from .llm_client import LlmClient
 from .response_normalizer import ResponseNormalizer
-from .models import DialogueRequest, DialogueResponse, Utterance, InternalDebug, DebugRetrieveResponse
+from .models import DialogueRequest, DialogueResponse, Utterance, InternalDebug, DebugRetrieveResponse, DebugMemoriesResponse
 from .config import CONFIG
 
 
 class DialogueOrchestrator:
-    def __init__(self):
+    def __init__(self, memory_store: MemoryStore | None = None, llm: LlmClient | None = None):
         self.loader = DataLoader()
         bundles = self.loader.load_all()
         self.bundles = bundles
@@ -23,11 +24,11 @@ class DialogueOrchestrator:
             top_k=CONFIG.get("retrieval", {}).get("top_k", 4),
             min_score=CONFIG.get("retrieval", {}).get("min_score", 0.035),
         )
-        self.memory_store = MemoryStore()
+        self.memory_store = memory_store or MemoryStore()
         for b in bundles.values():
             self.memory_store.seed_from_pack(b.memory_seed)
         self.prompt_builder = PromptBuilder()
-        self.llm = LlmClient()
+        self.llm = llm or LlmClient()
         self.normalizer = ResponseNormalizer()
 
     async def handle(self, req: DialogueRequest) -> DialogueResponse:
@@ -57,6 +58,9 @@ class DialogueOrchestrator:
             max_tokens=profile.get("generation_policy", {}).get("max_tokens", 360),
             fallback_name=profile.get("display_name_zh", "NPC"),
         )
+        deterministic_memory_candidates = self._extract_memory_candidates(req, turn_id)
+        if deterministic_memory_candidates:
+            raw["memory_candidates"] = deterministic_memory_candidates
         raw["used_knowledge_ids"] = self._trusted_ids(
             raw.get("used_knowledge_ids", []),
             [c.chunk_id for c in chunks],
@@ -105,7 +109,61 @@ class DialogueOrchestrator:
             chunks=chunks,
         )
 
+    def debug_memories(self, npc_id: str, player_id: str, include_default: bool = True) -> DebugMemoriesResponse:
+        self.loader.get_bundle(npc_id)
+        memories = self.memory_store.list_records(
+            npc_id=npc_id,
+            player_id=player_id,
+            include_default=include_default,
+        )
+        return DebugMemoriesResponse(
+            npc_id=npc_id,
+            player_id=player_id,
+            include_default=include_default,
+            memories=memories,
+        )
+
     @staticmethod
     def _trusted_ids(model_ids: List[str], backend_ids: List[str]) -> List[str]:
         trusted = [item for item in model_ids if item in backend_ids]
         return trusted or backend_ids
+
+    def _extract_memory_candidates(self, req: DialogueRequest, turn_id: str) -> List[Dict[str, object]]:
+        preferred_name = self._extract_preferred_name(req.player_text)
+        if not preferred_name:
+            return []
+        return [
+            {
+                "memory_id": f"mem_{req.npc_id}_{self._safe_id(req.player_id)}_preferred_address",
+                "memory_type": "preference",
+                "summary": f"玩家希望被称呼为{preferred_name}",
+                "detail": f"玩家明确要求 NPC 以后称呼自己为{preferred_name}。",
+                "salience": 0.92,
+                "retrieval_keywords": ["称呼", "叫我", "记得", preferred_name, "玩家名字"],
+                "source_turn_id": turn_id,
+            }
+        ]
+
+    @staticmethod
+    def _extract_preferred_name(player_text: str) -> str | None:
+        if "怎么叫我" in player_text or "如何叫我" in player_text:
+            return None
+        patterns = [
+            r"(?:以后|之后|接下来|下次)(?:请)?(?:叫|称呼)我(?:为|作|做)?([A-Za-z0-9_\u4e00-\u9fff]{1,12})",
+            r"请(?:叫|称呼)我(?:为|作|做)?([A-Za-z0-9_\u4e00-\u9fff]{1,12})",
+            r"^(?:叫|称呼)我(?:为|作|做)?([A-Za-z0-9_\u4e00-\u9fff]{1,12})",
+        ]
+        for pattern in patterns:
+            match = re.search(pattern, player_text)
+            if not match:
+                continue
+            name = match.group(1).strip()
+            if name in {"吗", "嘛", "呢", "么", "什么", "谁"}:
+                continue
+            return name
+        return None
+
+    @staticmethod
+    def _safe_id(value: str) -> str:
+        safe = re.sub(r"[^A-Za-z0-9_]+", "_", value).strip("_")
+        return safe[:40] or "player"

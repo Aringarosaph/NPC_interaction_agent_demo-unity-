@@ -17,7 +17,7 @@
 - [x] Phase 01: mock dialogue endpoint verified for all three NPCs.
 - [x] Phase 02: retrieval debug endpoint and retrieval tests.
 - [x] Phase 03: DeepSeek JSON output integration.
-- [ ] Phase 04: SQLite memory write/read flow.
+- [x] Phase 04: SQLite memory write/read flow.
 - [ ] Phase 05: Unity whitebox scene.
 - [ ] Phase 06: portfolio polish and demo material.
 
@@ -70,3 +70,15 @@
 - 2026-06-30: Normalizer no longer leaves bubble text ending on a trailing comma when trimming long model output.
 - 2026-06-30: Ran `python -m pytest -q`; 9 tests and 3 subtests passed.
 - 2026-06-30: Ran `python -m unittest discover -s tests`; 7 tests passed.
+- 2026-06-30: Added deterministic preference memory extraction for explicit address requests such as `以后叫我小林`.
+- 2026-06-30: Added `GET /api/v1/debug/memories?npc_id=...&player_id=...` for inspectable SQLite memories.
+- 2026-06-30: Added isolated SQLite memory tests for write, recall, and NPC-only visibility.
+- 2026-06-30: Fixed preference extraction so recall questions like `你记得怎么叫我吗？` do not create a bogus `吗` memory.
+- 2026-06-30: Retrieval now returns no chunks for unrelated zero-score queries instead of falling through to high-priority boundary chunks.
+- 2026-06-30: Phase 04 live checks passed:
+  - `arknights_amiya` / `以后叫我小林` wrote `mem_arknights_amiya_local_player_preferred_address`.
+  - `debug/memories` for Amiya returned the `小林` preference.
+  - `arknights_amiya` / `你记得怎么叫我吗？` replied with `小林` and created no new memory candidate.
+  - `debug/memories` for Yae Miko returned no Amiya player memory.
+- 2026-06-30: Ran `python -m pytest -q`; 13 tests and 3 subtests passed.
+- 2026-06-30: Ran `python -m unittest discover -s tests`; 9 tests passed.

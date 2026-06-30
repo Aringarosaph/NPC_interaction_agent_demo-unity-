@@ -66,3 +66,30 @@ class MemorySnippet(BaseModel):
     summary: str
     detail: str
     score: float = 0.0
+
+
+class MemoryDebugRecord(BaseModel):
+    memory_id: str
+    npc_id: str
+    player_id: str
+    memory_type: str
+    summary: str
+    detail: str
+    salience: float
+    confidence: float
+    created_at: str
+    last_seen_at: str
+    decay_policy: str
+    expires_at: Optional[str] = None
+    source_turn_id: Optional[str] = None
+    write_protected: bool = False
+    visibility: Dict[str, Any] = Field(default_factory=dict)
+    retrieval_keywords: List[str] = Field(default_factory=list)
+    status: str
+
+
+class DebugMemoriesResponse(BaseModel):
+    npc_id: str
+    player_id: str
+    include_default: bool = True
+    memories: List[MemoryDebugRecord] = Field(default_factory=list)

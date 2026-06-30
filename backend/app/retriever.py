@@ -67,7 +67,7 @@ class SmallKnowledgeRetriever:
         for c, score in ranked:
             if c["chunk_id"] in seen:
                 continue
-            if score < self.min_score and len(selected) > 0:
+            if score < self.min_score:
                 continue
             selected.append(self._to_result(c, float(score)))
             if len(selected) >= self.top_k:

@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import SERVER_HOST, SERVER_PORT
-from .models import DialogueRequest, DialogueResponse, DebugRetrieveResponse
+from .models import DialogueRequest, DialogueResponse, DebugRetrieveResponse, DebugMemoriesResponse
 from .orchestrator import DialogueOrchestrator
 
 app = FastAPI(title="Portfolio NPC RAG Agent", version="0.1.0")
@@ -53,6 +53,24 @@ def debug_retrieve(
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"debug_retrieve_failed: {e}")
+
+
+@app.get("/api/v1/debug/memories", response_model=DebugMemoriesResponse)
+def debug_memories(
+    npc_id: str = Query(..., min_length=1),
+    player_id: str = Query("local_player", min_length=1),
+    include_default: bool = True,
+) -> DebugMemoriesResponse:
+    try:
+        return orchestrator.debug_memories(
+            npc_id=npc_id,
+            player_id=player_id,
+            include_default=include_default,
+        )
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"debug_memories_failed: {e}")
 
 
 if __name__ == "__main__":
