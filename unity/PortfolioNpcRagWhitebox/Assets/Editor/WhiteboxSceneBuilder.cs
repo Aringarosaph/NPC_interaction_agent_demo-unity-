@@ -41,7 +41,7 @@ public static class WhiteboxSceneBuilder
         characterController.height = 2f;
         characterController.radius = 0.45f;
         WhiteboxPlayerController playerController = player.AddComponent<WhiteboxPlayerController>();
-        Transform playerBubbleAnchor = CreateBubbleAnchor(player.transform, "BubbleAnchor", new Vector3(0f, 1.55f, 0f));
+        Transform playerBubbleAnchor = CreateBubbleAnchor(player.transform, "BubbleAnchor", new Vector3(0f, 2.35f, 0f));
 
         GameObject cameraObject = new GameObject("Main Camera");
         Camera camera = cameraObject.AddComponent<Camera>();
@@ -49,6 +49,7 @@ public static class WhiteboxSceneBuilder
         camera.fieldOfView = 55f;
         SimpleThirdPersonCamera followCamera = cameraObject.AddComponent<SimpleThirdPersonCamera>();
         followCamera.target = player.transform;
+        followCamera.distance = 6.3f;
         playerController.cameraTransform = cameraObject.transform;
         cameraObject.transform.position = new Vector3(0f, 4.5f, -9f);
         cameraObject.transform.LookAt(player.transform.position + Vector3.up * 1.2f);
@@ -78,6 +79,8 @@ public static class WhiteboxSceneBuilder
         chatInput.sendButton = sendButton;
         chatInput.rangeDetector = rangeDetector;
         chatInput.dialogueClient = dialogueClient;
+        chatInput.playerController = playerController;
+        chatInput.followCamera = followCamera;
 
         Selection.objects = new Object[] { player, amiya.gameObject, yae.gameObject, jinhsi.gameObject, canvas, dialogueSystem };
         EditorSceneManager.SaveScene(scene, ScenePath);
@@ -97,7 +100,7 @@ public static class WhiteboxSceneBuilder
         EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
 
         GameObject player = RequireObject("PlayerCapsule");
-        RequireComponent<WhiteboxPlayerController>(player);
+        WhiteboxPlayerController playerController = RequireComponent<WhiteboxPlayerController>(player);
         RequireComponent<CharacterController>(player);
 
         RequireNpc("NPC_Amiya_Capsule", "arknights_amiya");
@@ -113,7 +116,9 @@ public static class WhiteboxSceneBuilder
         Require(rangeDetector.player == player.transform, "Range detector player binding is missing.");
         NpcDialogueClient dialogueClient = RequireComponent<NpcDialogueClient>(dialogueSystem);
         Require(dialogueClient.endpoint == "http://127.0.0.1:8008/api/v1/dialogue", "Dialogue endpoint is not the local FastAPI endpoint.");
-        RequireComponent<PlayerChatInput>(dialogueSystem);
+        PlayerChatInput chatInput = RequireComponent<PlayerChatInput>(dialogueSystem);
+        Require(chatInput.playerController == playerController, "Chat input is not bound to the player controller.");
+        Require(chatInput.followCamera == camera, "Chat input is not bound to the follow camera.");
 
         bool sceneInBuildSettings = false;
         foreach (EditorBuildSettingsScene buildScene in EditorBuildSettings.scenes)
@@ -140,7 +145,7 @@ public static class WhiteboxSceneBuilder
         marker.npcId = npcId;
         marker.displayName = displayName;
         marker.interactionRadius = 3f;
-        marker.bubbleAnchor = CreateBubbleAnchor(npc.transform, "BubbleAnchor", new Vector3(0f, 1.55f, 0f));
+        marker.bubbleAnchor = CreateBubbleAnchor(npc.transform, "BubbleAnchor", new Vector3(0f, 2.95f, 0f));
         CreateNameplate(npc.transform, displayName, new Vector3(0f, 2.25f, 0f));
         return marker;
     }
@@ -152,6 +157,10 @@ public static class WhiteboxSceneBuilder
         Require(marker.npcId == expectedNpcId, $"{objectName} has unexpected npcId '{marker.npcId}'.");
         Require(marker.bubbleAnchor != null, $"{objectName} is missing a bubble anchor.");
         Require(marker.bubbleAnchor.GetComponentInChildren<SpeechBubbleController>() != null, $"{objectName} is missing a speech bubble.");
+        Transform nameplate = npc.transform.Find("Nameplate");
+        Require(nameplate != null, $"{objectName} is missing a nameplate.");
+        Require(nameplate.GetComponentInChildren<TMP_Text>() != null, $"{objectName} nameplate is missing text.");
+        Require(marker.bubbleAnchor.localPosition.y > nameplate.localPosition.y, $"{objectName} bubble should be above its nameplate.");
     }
 
     private static GameObject RequireObject(string objectName)
@@ -238,12 +247,31 @@ public static class WhiteboxSceneBuilder
 
         Canvas canvas = plate.AddComponent<Canvas>();
         canvas.renderMode = RenderMode.WorldSpace;
+        plate.AddComponent<BillboardToCamera>();
         RectTransform rect = plate.GetComponent<RectTransform>();
-        rect.sizeDelta = new Vector2(180f, 48f);
+        rect.sizeDelta = new Vector2(160f, 34f);
 
-        TMP_Text text = plate.AddComponent<TextMeshProUGUI>();
+        GameObject background = new GameObject("NameplateBackground");
+        background.transform.SetParent(plate.transform, false);
+        RectTransform backgroundRect = background.AddComponent<RectTransform>();
+        backgroundRect.anchorMin = Vector2.zero;
+        backgroundRect.anchorMax = Vector2.one;
+        backgroundRect.offsetMin = Vector2.zero;
+        backgroundRect.offsetMax = Vector2.zero;
+        Image image = background.AddComponent<Image>();
+        image.color = new Color(0f, 0f, 0f, 0.48f);
+
+        GameObject textObject = new GameObject("NameplateText");
+        textObject.transform.SetParent(plate.transform, false);
+        RectTransform textRect = textObject.AddComponent<RectTransform>();
+        textRect.anchorMin = Vector2.zero;
+        textRect.anchorMax = Vector2.one;
+        textRect.offsetMin = new Vector2(8f, 2f);
+        textRect.offsetMax = new Vector2(-8f, -2f);
+
+        TMP_Text text = textObject.AddComponent<TextMeshProUGUI>();
         text.text = displayName;
-        text.fontSize = 30f;
+        text.fontSize = 23f;
         text.alignment = TextAlignmentOptions.Center;
         text.color = Color.white;
     }
@@ -313,7 +341,7 @@ public static class WhiteboxSceneBuilder
         textRect.offsetMin = Vector2.zero;
         textRect.offsetMax = Vector2.zero;
 
-        TMP_Text placeholder = CreateUiText(viewport.transform, "Placeholder", "靠近 NPC 后输入文字", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, 22f);
+        TMP_Text placeholder = CreateUiText(viewport.transform, "Placeholder", "靠近 NPC 后按 Enter 输入文字", Vector2.zero, Vector2.one, Vector2.zero, Vector2.zero, 22f);
         placeholder.alignment = TextAlignmentOptions.MidlineLeft;
         placeholder.color = new Color(1f, 1f, 1f, 0.45f);
 

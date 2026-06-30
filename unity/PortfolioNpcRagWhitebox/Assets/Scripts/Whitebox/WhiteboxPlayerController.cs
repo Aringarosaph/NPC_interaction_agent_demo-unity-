@@ -6,6 +6,7 @@ public class WhiteboxPlayerController : MonoBehaviour
     public float moveSpeed = 4.5f;
     public float rotationSpeed = 540f;
     public Transform cameraTransform;
+    public bool controlsEnabled = true;
 
     private CharacterController controller;
     private float verticalVelocity;
@@ -17,6 +18,12 @@ public class WhiteboxPlayerController : MonoBehaviour
 
     private void Update()
     {
+        if (!controlsEnabled)
+        {
+            ApplyGravity(Vector3.zero);
+            return;
+        }
+
         float horizontal = Input.GetAxisRaw("Horizontal");
         float vertical = Input.GetAxisRaw("Vertical");
         Vector3 input = new Vector3(horizontal, 0f, vertical);
@@ -40,14 +47,18 @@ public class WhiteboxPlayerController : MonoBehaviour
             transform.rotation = Quaternion.RotateTowards(transform.rotation, targetRotation, rotationSpeed * Time.deltaTime);
         }
 
+        ApplyGravity(move * moveSpeed);
+    }
+
+    private void ApplyGravity(Vector3 horizontalVelocity)
+    {
         if (controller.isGrounded && verticalVelocity < 0f)
         {
             verticalVelocity = -1f;
         }
         verticalVelocity += Physics.gravity.y * Time.deltaTime;
 
-        Vector3 velocity = move * moveSpeed;
-        velocity.y = verticalVelocity;
-        controller.Move(velocity * Time.deltaTime);
+        horizontalVelocity.y = verticalVelocity;
+        controller.Move(horizontalVelocity * Time.deltaTime);
     }
 }

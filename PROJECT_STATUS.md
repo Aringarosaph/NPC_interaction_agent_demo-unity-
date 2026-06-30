@@ -95,3 +95,12 @@
 - 2026-06-30: Re-ran backend regression checks after Unity project generation:
   - `python -m pytest -q`; 13 tests and 3 subtests passed.
   - `python -m unittest discover -s tests`; 9 tests passed.
+- 2026-06-30: Refined Unity whitebox controls:
+  - Third-person camera now uses mouse look plus WASD/arrow movement.
+  - Chat input now focuses with Enter near an NPC, unlocks the cursor while typing, and exits with Send/Enter/Escape.
+  - NPC nameplates now sit above the capsules and speech bubbles sit above the nameplates.
+- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.BuildWhiteboxScene` completed successfully after control and nameplate refinements.
+- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene` completed successfully with `Whitebox scene validation passed.`
+- 2026-06-30: Re-ran backend regression checks after Unity control refinements:
+  - `python -m pytest -q`; 13 tests and 3 subtests passed.
+  - `python -m unittest discover -s tests`; 9 tests passed.

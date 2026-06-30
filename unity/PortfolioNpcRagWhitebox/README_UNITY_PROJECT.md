@@ -63,4 +63,11 @@ source .venv/bin/activate
 python -m uvicorn app.main:app --host 127.0.0.1 --port 8008
 ```
 
-Then enter Play Mode in Unity. Move with WASD/arrow keys, approach an NPC, type in the bottom input field, and press Send.
+Then enter Play Mode in Unity:
+
+- Move with WASD or arrow keys.
+- Look around with the mouse.
+- Approach an NPC until the current NPC label changes.
+- Press Enter to focus the input field.
+- Type and press Enter or Send.
+- Press Escape to leave typing mode and return to camera control.

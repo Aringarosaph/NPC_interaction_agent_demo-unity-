@@ -13,7 +13,7 @@ public class DialogueRangeDetector : MonoBehaviour
 
     private void Start()
     {
-        npcs = FindObjectsByType<NpcAgentMarker>(FindObjectsSortMode.None);
+        npcs = FindObjectsByType<NpcAgentMarker>(FindObjectsInactive.Exclude);
     }
 
     private void Update()
