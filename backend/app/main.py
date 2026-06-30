@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 import uvicorn
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import SERVER_HOST, SERVER_PORT
-from .models import DialogueRequest, DialogueResponse
+from .models import DialogueRequest, DialogueResponse, DebugRetrieveResponse
 from .orchestrator import DialogueOrchestrator
 
 app = FastAPI(title="Portfolio NPC RAG Agent", version="0.1.0")
@@ -33,6 +33,26 @@ async def dialogue(req: DialogueRequest) -> DialogueResponse:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"dialogue_failed: {e}")
+
+
+@app.get("/api/v1/debug/retrieve", response_model=DebugRetrieveResponse)
+def debug_retrieve(
+    npc_id: str = Query(..., min_length=1),
+    q: str = Query(..., min_length=1),
+    quest_stage: int = 0,
+    max_spoiler_level: int | None = None,
+) -> DebugRetrieveResponse:
+    try:
+        return orchestrator.debug_retrieve(
+            npc_id=npc_id,
+            query=q,
+            quest_stage=quest_stage,
+            max_spoiler_level=max_spoiler_level,
+        )
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"debug_retrieve_failed: {e}")
 
 
 if __name__ == "__main__":

@@ -9,7 +9,7 @@ from .memory_store import MemoryStore
 from .prompt_builder import PromptBuilder
 from .llm_client import LlmClient
 from .response_normalizer import ResponseNormalizer
-from .models import DialogueRequest, DialogueResponse, Utterance, InternalDebug
+from .models import DialogueRequest, DialogueResponse, Utterance, InternalDebug, DebugRetrieveResponse
 from .config import CONFIG
 
 
@@ -73,3 +73,31 @@ class DialogueOrchestrator:
         for candidate in response.internal.memory_candidates:
             self.memory_store.write_candidate(req.npc_id, req.player_id, candidate, source_turn_id=turn_id)
         return response
+
+    def debug_retrieve(
+        self,
+        npc_id: str,
+        query: str,
+        quest_stage: int = 0,
+        max_spoiler_level: int | None = None,
+    ) -> DebugRetrieveResponse:
+        bundle = self.loader.get_bundle(npc_id)
+        profile = bundle.profile
+        spoiler_level = (
+            profile.get("knowledge_policy", {}).get("max_spoiler_level_default", 1)
+            if max_spoiler_level is None
+            else max_spoiler_level
+        )
+        chunks = self.retriever.retrieve(
+            npc_id=npc_id,
+            query=query,
+            quest_stage=quest_stage,
+            max_spoiler_level=spoiler_level,
+        )
+        return DebugRetrieveResponse(
+            npc_id=npc_id,
+            query=query,
+            quest_stage=quest_stage,
+            max_spoiler_level=spoiler_level,
+            chunks=chunks,
+        )

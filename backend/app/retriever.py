@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List
-import re
 
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.metrics.pairwise import cosine_similarity
@@ -22,6 +21,7 @@ class SmallKnowledgeRetriever:
         self.min_score = min_score
         self.vectorizers: Dict[str, TfidfVectorizer] = {}
         self.matrices: Dict[str, Any] = {}
+        self.indexed_chunks: Dict[str, List[Dict[str, Any]]] = {}
         self._build()
 
     def _build(self) -> None:
@@ -33,6 +33,7 @@ class SmallKnowledgeRetriever:
             matrix = vectorizer.fit_transform(corpus)
             self.vectorizers[npc_id] = vectorizer
             self.matrices[npc_id] = matrix
+            self.indexed_chunks[npc_id] = list(chunks)
 
     def retrieve(self, npc_id: str, query: str, quest_stage: int = 0, max_spoiler_level: int = 1) -> List[RetrievedChunk]:
         chunks = self._visible_chunks(npc_id, quest_stage, max_spoiler_level)
@@ -48,8 +49,16 @@ class SmallKnowledgeRetriever:
         matrix = self.matrices[npc_id]
         qv = vectorizer.transform([query])
         scores = cosine_similarity(qv, matrix)[0]
+        score_by_chunk_id = {
+            c["chunk_id"]: float(score)
+            for c, score in zip(self.indexed_chunks[npc_id], scores)
+        }
 
-        ranked = sorted(zip(chunks, scores), key=lambda x: (x[1], x[0].get("priority", 0)), reverse=True)
+        ranked = sorted(
+            ((c, score_by_chunk_id.get(c["chunk_id"], 0.0)) for c in chunks),
+            key=lambda x: (x[1], x[0].get("priority", 0)),
+            reverse=True,
+        )
         selected = []
         seen = set()
         for c in boundary_hits:

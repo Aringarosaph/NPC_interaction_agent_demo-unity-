@@ -39,4 +39,11 @@ Mock dialogue regression tests:
 
 ```bash
 python -m unittest discover -s tests
+python -m pytest -q
+```
+
+Retrieval debug endpoint:
+
+```bash
+curl "http://127.0.0.1:8008/api/v1/debug/retrieve?npc_id=arknights_amiya&q=源石病"
 ```

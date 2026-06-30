@@ -53,6 +53,14 @@ class RetrievedChunk(BaseModel):
     score: float = 0.0
 
 
+class DebugRetrieveResponse(BaseModel):
+    npc_id: str
+    query: str
+    quest_stage: int = 0
+    max_spoiler_level: int = 1
+    chunks: List[RetrievedChunk] = Field(default_factory=list)
+
+
 class MemorySnippet(BaseModel):
     memory_id: str
     summary: str

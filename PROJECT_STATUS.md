@@ -15,7 +15,7 @@
 - [x] Phase 00: repository initialized and source package organized.
 - [x] Phase 00: backend virtual environment created and health endpoint verified.
 - [x] Phase 01: mock dialogue endpoint verified for all three NPCs.
-- [ ] Phase 02: retrieval debug endpoint and retrieval tests.
+- [x] Phase 02: retrieval debug endpoint and retrieval tests.
 - [ ] Phase 03: DeepSeek JSON output integration.
 - [ ] Phase 04: SQLite memory write/read flow.
 - [ ] Phase 05: Unity whitebox scene.
@@ -51,3 +51,12 @@
   - `arknights_amiya` / `你知道八重神子吗？` hit `amiya_boundary_other_worlds`.
   - `genshin_yae_miko` / `我想投稿轻小说。` hit `yae_publishing_house`.
   - `wuwa_jinhsi` / `我有一个愿望。` hit `jinhsi_wish_custom`.
+- 2026-06-30: Added `GET /api/v1/debug/retrieve?npc_id=...&q=...` for inspectable RAG chunks.
+- 2026-06-30: Added pytest retrieval checks for `源石病`, `轻小说投稿`, `今州愿望`, and `阿米娅认识八重神子吗`.
+- 2026-06-30: Fixed TF-IDF score mapping so visible chunk filtering cannot misalign chunks and scores.
+- 2026-06-30: Ran `python -m pytest -q`; 4 tests and 3 subtests passed.
+- 2026-06-30: Phase 02 live curl checks confirmed:
+  - `源石病` returned `amiya_oripathy_infected`.
+  - `轻小说投稿` returned `yae_publishing_house`.
+  - `今州愿望` returned `jinhsi_wish_custom`.
+  - `阿米娅认识八重神子吗` returned `amiya_boundary_other_worlds`.
