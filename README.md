@@ -10,10 +10,9 @@
 - **本地 FastAPI 后端**：Unity 只连接本地后端，不直接暴露或调用 LLM API。
 - **RAG 角色知识检索**：每个 NPC 都有独立的 profile、knowledge chunks、dialogue examples 和 memory seed。
 - **可控 JSON 输出**：后端把模型回复归一化为 `utterances`，字段包括 `text`、`emotion`、`action`、`delay_ms`，方便 Unity 稳定消费。
-- **本地 SQLite 记忆**：支持写入和召回玩家偏好，例如“以后叫我小林”。
+- **本地 SQLite 记忆**：支持写入和召回玩家偏好，例如“以后叫我小吴”。
 - **角色边界处理**：角色不会假装知道其他作品世界、Unity、AI、后端等出戏内容。
 - **自动化验证**：已包含后端测试、Unity 场景 validator、Unity Play Mode backend smoke。
-- **公开仓库安全**：`.env`、本地记忆数据库、虚拟环境、Unity `Library/` 和派生缓存都已加入忽略规则。
 
 ## 快速开始
 
@@ -67,7 +66,7 @@ curl http://127.0.0.1:8008/api/v1/health
 
 ### 2. 打开 Unity 项目
 
-使用 Unity `6000.4.2f1` 打开：
+使用 Unity 打开，项目版本为 `6000.4.2f1`：
 
 ```text
 unity/PortfolioNpcRagWhitebox
@@ -79,7 +78,7 @@ unity/PortfolioNpcRagWhitebox
 Assets/Scenes/Scene_PortfolioNpcRag.unity
 ```
 
-如果需要重新生成白盒场景，在 Unity 菜单执行：
+如果需要重新生成白盒场景，执行：
 
 ```text
 NPC Demo > Build Whitebox Scene
@@ -123,25 +122,14 @@ kill <PID>
 
 把 `<PID>` 替换为 `lsof` 输出里的进程 id。
 
-## 录屏建议流程
-
-1. 启动后端，并保持终端窗口打开。
-2. 用 Unity 打开 `unity/PortfolioNpcRagWhitebox`。
-3. 打开 `Assets/Scenes/Scene_PortfolioNpcRag.unity`。
-4. 进入 Play Mode。
-5. 走到阿米娅旁边，询问罗德岛或源石病相关问题。
-6. 走到八重神子旁边，询问投稿或轻小说相关问题。
-7. 走到今汐旁边，询问愿望或今州相关问题。
-8. 可选展示记忆能力：对某个 NPC 说 `以后叫我小林`，然后问 `你记得怎么叫我吗？`。
-
-可直接使用的短提示词：
+## 可直接使用的短提示词例子（demo知识库体量有限，仅涵盖一部分核心信息）
 
 ```text
 阿米娅，罗德岛的使命是什么？
 源石病是什么？
 我想给八重堂投稿。
 今汐，我有一个愿望。
-以后叫我小林。
+以后叫我小吴。
 你记得怎么叫我吗？
 ```
 
@@ -176,6 +164,8 @@ curl -X POST http://127.0.0.1:8008/api/v1/dialogue \
   }
 }
 ```
+
+预留了情绪与动作字段，后期可接入游戏。
 
 ## 验证方式
 
