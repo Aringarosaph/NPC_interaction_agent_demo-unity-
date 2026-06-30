@@ -41,9 +41,14 @@ class ResponseNormalizer:
     def _trim_sentence(text: str, max_chars: int) -> str:
         if len(text) <= max_chars:
             return text
-        # Prefer a natural first clause.
-        for sep in ["。", "！", "？", "，", ",", ";", "；"]:
+        for sep in ["。", "！", "？"]:
             idx = text.find(sep)
             if 0 < idx <= max_chars:
                 return text[: idx + 1]
+        # A comma clause is better than a hard cut, but do not leave the bubble
+        # hanging on a trailing comma.
+        for sep in ["，", ",", ";", "；"]:
+            idx = text.find(sep)
+            if 0 < idx <= max_chars:
+                return text[:idx]
         return text[:max_chars]

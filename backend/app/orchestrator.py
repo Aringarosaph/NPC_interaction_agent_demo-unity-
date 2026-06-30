@@ -57,11 +57,14 @@ class DialogueOrchestrator:
             max_tokens=profile.get("generation_policy", {}).get("max_tokens", 360),
             fallback_name=profile.get("display_name_zh", "NPC"),
         )
-        # If model forgets IDs, fill retrieval IDs for debug.
-        if not raw.get("used_knowledge_ids"):
-            raw["used_knowledge_ids"] = [c.chunk_id for c in chunks]
-        if not raw.get("used_memory_ids"):
-            raw["used_memory_ids"] = [m.memory_id for m in memories]
+        raw["used_knowledge_ids"] = self._trusted_ids(
+            raw.get("used_knowledge_ids", []),
+            [c.chunk_id for c in chunks],
+        )
+        raw["used_memory_ids"] = self._trusted_ids(
+            raw.get("used_memory_ids", []),
+            [m.memory_id for m in memories],
+        )
         response = self.normalizer.normalize(
             raw,
             npc_id=req.npc_id,
@@ -101,3 +104,8 @@ class DialogueOrchestrator:
             max_spoiler_level=spoiler_level,
             chunks=chunks,
         )
+
+    @staticmethod
+    def _trusted_ids(model_ids: List[str], backend_ids: List[str]) -> List[str]:
+        trusted = [item for item in model_ids if item in backend_ids]
+        return trusted or backend_ids

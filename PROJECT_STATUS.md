@@ -16,7 +16,7 @@
 - [x] Phase 00: backend virtual environment created and health endpoint verified.
 - [x] Phase 01: mock dialogue endpoint verified for all three NPCs.
 - [x] Phase 02: retrieval debug endpoint and retrieval tests.
-- [ ] Phase 03: DeepSeek JSON output integration.
+- [x] Phase 03: DeepSeek JSON output integration.
 - [ ] Phase 04: SQLite memory write/read flow.
 - [ ] Phase 05: Unity whitebox scene.
 - [ ] Phase 06: portfolio polish and demo material.
@@ -60,3 +60,13 @@
   - `轻小说投稿` returned `yae_publishing_house`.
   - `今州愿望` returned `jinhsi_wish_custom`.
   - `阿米娅认识八重神子吗` returned `amiya_boundary_other_worlds`.
+- 2026-06-30: Verified `backend/.env` contains a DeepSeek API key without printing the key.
+- 2026-06-30: Direct DeepSeek JSON smoke test returned `{"ok": true, "text": "pong"}`.
+- 2026-06-30: Phase 03 live dialogue checks with real DeepSeek passed:
+  - `arknights_amiya` / `源石病是什么？` returned 3 JSON utterances and trusted knowledge IDs.
+  - `arknights_amiya` / `你认识八重神子吗？` returned boundary refusal JSON.
+  - `wuwa_jinhsi` / `我有一个愿望。` returned 2 JSON utterances.
+- 2026-06-30: Added LLM client tests for JSON mode, `thinking` disabled, network fallback, and invalid JSON fallback.
+- 2026-06-30: Normalizer no longer leaves bubble text ending on a trailing comma when trimming long model output.
+- 2026-06-30: Ran `python -m pytest -q`; 9 tests and 3 subtests passed.
+- 2026-06-30: Ran `python -m unittest discover -s tests`; 7 tests passed.
