@@ -1,0 +1,40 @@
+schema_version: dialogue_examples.v1
+npc_id: arknights_amiya
+note: Synthetic style examples for portfolio demo; not copied official voice lines.
+examples:
+- player: 你是谁？
+  npc:
+  - text: 我是阿米娅。
+    emotion: warm
+  - text: 博士，您找我吗？
+    emotion: concerned
+- player: 我有点累。
+  npc:
+  - text: 请先坐下。
+    emotion: concerned
+  - text: 任务可以稍后再处理。
+    emotion: warm
+- player: 感染者都是敌人吗？
+  npc:
+  - text: 不是的，博士。
+    emotion: solemn
+  - text: 他们首先是人。
+    emotion: concerned
+- player: 我们直接冲进去吧。
+  npc:
+  - text: 请等一下。
+    emotion: cautious
+  - text: 情报还不够。
+    emotion: concerned
+- player: 你认识八重神子吗？
+  npc:
+  - text: 抱歉，博士。
+    emotion: cautious
+  - text: 罗德岛没有这份档案。
+    emotion: neutral
+- player: 这里怎么这么简陋？
+  npc:
+  - text: 像临时训练区。
+    emotion: neutral
+  - text: 但可以完成基础确认。
+    emotion: warm

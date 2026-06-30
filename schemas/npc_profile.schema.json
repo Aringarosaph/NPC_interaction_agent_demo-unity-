@@ -1,0 +1,267 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "npc_profile.v1",
+  "title": "NPC Profile",
+  "description": "Frozen profile schema for persona-stable small RAG NPC demo.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "npc_id",
+    "display_name_zh",
+    "world_id",
+    "identity",
+    "persona",
+    "speech",
+    "knowledge_policy",
+    "generation_policy",
+    "source_notes"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "npc_profile.v1"
+    },
+    "npc_id": {
+      "type": "string",
+      "pattern": "^[a-z0-9_]+$"
+    },
+    "display_name_zh": {
+      "type": "string"
+    },
+    "display_name_en": {
+      "type": "string"
+    },
+    "source_title": {
+      "type": "string"
+    },
+    "world_id": {
+      "type": "string"
+    },
+    "demo_unity": {
+      "type": "object",
+      "required": [
+        "prefab_hint",
+        "interaction_radius_m",
+        "bubble_anchor_name"
+      ],
+      "properties": {
+        "prefab_hint": {
+          "type": "string"
+        },
+        "interaction_radius_m": {
+          "type": "number"
+        },
+        "bubble_anchor_name": {
+          "type": "string"
+        }
+      }
+    },
+    "identity": {
+      "type": "object",
+      "required": [
+        "canonical_role",
+        "public_identity",
+        "player_address_default",
+        "player_relation_default",
+        "age_mode"
+      ],
+      "properties": {
+        "canonical_role": {
+          "type": "string"
+        },
+        "public_identity": {
+          "type": "string"
+        },
+        "player_address_default": {
+          "type": "string"
+        },
+        "player_relation_default": {
+          "type": "string"
+        },
+        "age_mode": {
+          "type": "string"
+        },
+        "affiliations": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "persona": {
+      "type": "object",
+      "required": [
+        "core_traits",
+        "values",
+        "pressure_points",
+        "baseline_emotion",
+        "relationship_stance"
+      ],
+      "properties": {
+        "core_traits": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "values": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "pressure_points": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "baseline_emotion": {
+          "type": "string"
+        },
+        "relationship_stance": {
+          "type": "string"
+        }
+      }
+    },
+    "speech": {
+      "type": "object",
+      "required": [
+        "language",
+        "register",
+        "style_tags",
+        "sentence_max_chars",
+        "utterance_count",
+        "avoid",
+        "addressing_rules"
+      ],
+      "properties": {
+        "language": {
+          "type": "string"
+        },
+        "register": {
+          "type": "string"
+        },
+        "style_tags": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "sentence_max_chars": {
+          "type": "integer"
+        },
+        "utterance_count": {
+          "type": "object"
+        },
+        "signature_moves": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "avoid": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "addressing_rules": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "knowledge_policy": {
+      "type": "object",
+      "required": [
+        "allowed_scopes",
+        "forbidden_scopes",
+        "unknown_strategy",
+        "max_spoiler_level_default",
+        "cross_world_policy"
+      ],
+      "properties": {
+        "allowed_scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "forbidden_scopes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unknown_strategy": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "max_spoiler_level_default": {
+          "type": "integer"
+        },
+        "cross_world_policy": {
+          "type": "string"
+        }
+      }
+    },
+    "generation_policy": {
+      "type": "object",
+      "required": [
+        "llm_temperature",
+        "max_response_utterances",
+        "max_tokens",
+        "json_output_required",
+        "mention_sources_to_player",
+        "memory_write_policy"
+      ],
+      "properties": {
+        "llm_temperature": {
+          "type": "number"
+        },
+        "max_response_utterances": {
+          "type": "integer"
+        },
+        "max_tokens": {
+          "type": "integer"
+        },
+        "json_output_required": {
+          "type": "boolean"
+        },
+        "mention_sources_to_player": {
+          "type": "boolean"
+        },
+        "memory_write_policy": {
+          "type": "string"
+        }
+      }
+    },
+    "source_notes": {
+      "type": "object",
+      "required": [
+        "public_research_urls",
+        "data_confidence",
+        "copyright_note"
+      ],
+      "properties": {
+        "public_research_urls": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "data_confidence": {
+          "type": "string"
+        },
+        "copyright_note": {
+          "type": "string"
+        }
+      }
+    }
+  }
+}

@@ -1,0 +1,26 @@
+schema_version: eval_tests.v1
+tests:
+- id: scope_amiya_yae
+  npc_id: arknights_amiya
+  input: 你认识八重神子吗？
+  expected_chunk: amiya_boundary_other_worlds
+- id: scope_yae_jinhsi
+  npc_id: genshin_yae_miko
+  input: 今州在哪里？
+  expected_chunk: yae_boundary_other_worlds
+- id: scope_jinhsi_amiya
+  npc_id: wuwa_jinhsi
+  input: 罗德岛是什么组织？
+  expected_chunk: jinhsi_boundary_other_worlds
+- id: rag_amiya_oripathy
+  npc_id: arknights_amiya
+  input: 源石病会让感染者怎样？
+  expected_chunk: amiya_oripathy_infected
+- id: rag_yae_novel
+  npc_id: genshin_yae_miko
+  input: 我想写轻小说投稿。
+  expected_chunk: yae_publishing_house
+- id: rag_jinhsi_wish
+  npc_id: wuwa_jinhsi
+  input: 我能向你许愿吗？
+  expected_chunk: jinhsi_wish_custom

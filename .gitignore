@@ -1,0 +1,52 @@
+.DS_Store
+
+# Local secrets and machine-specific config
+.env
+.env.*
+!.env.example
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.venv/
+venv/
+backend/.venv/
+
+# Local runtime data and generated memory
+*.sqlite
+*.sqlite3
+*.db
+backend/local_memory.sqlite
+local_memory.sqlite
+memories/
+memory/
+
+# Unity generated files
+Library/
+Temp/
+Obj/
+Build/
+Builds/
+Logs/
+UserSettings/
+MemoryCaptures/
+Recordings/
+*.csproj
+*.sln
+*.suo
+*.user
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.mdb
+*.opendb
+*.VC.db
+sysinfo.txt
+
+# macOS and editor noise
+.idea/
+.vscode/

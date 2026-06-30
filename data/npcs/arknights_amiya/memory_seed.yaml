@@ -1,0 +1,27 @@
+schema_version: memory_pack.v1
+npc_id: arknights_amiya
+records:
+- schema_version: memory_record.v1
+  memory_id: seed_arknights_amiya_default_relation
+  npc_id: arknights_amiya
+  player_id: __default__
+  memory_type: demo_seed
+  summary: 默认称呼玩家为博士
+  detail: 默认把玩家视作博士；这是作品集演示的初始关系，用于统一称呼。
+  salience: 0.55
+  confidence: 1.0
+  created_at: '2026-06-29'
+  last_seen_at: '2026-06-29'
+  decay_policy: never
+  expires_at: null
+  source_turn_id: null
+  write_protected: true
+  visibility:
+    owner_npc_only: true
+    share_with_world_ids: []
+  retrieval_keywords:
+  - 称呼
+  - 默认关系
+  - 玩家
+  - 博士
+  status: active

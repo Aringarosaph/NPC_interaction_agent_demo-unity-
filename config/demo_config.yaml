@@ -1,0 +1,35 @@
+schema_version: demo_config.v1
+server:
+  host: 127.0.0.1
+  port: 8008
+  cors_allow_origins:
+  - '*'
+llm:
+  provider: deepseek
+  base_url: https://api.deepseek.com
+  model: deepseek-v4-flash
+  thinking: disabled
+  json_mode: true
+  timeout_seconds: 20
+  mock_when_api_key_missing: true
+retrieval:
+  mode: tfidf_char_ngram
+  top_k: 4
+  memory_top_k: 3
+  min_score: 0.035
+  chunk_budget_chars: 1600
+  query_uses_recent_turns: true
+dialogue:
+  utterance_min: 1
+  utterance_max: 3
+  sentence_max_chars: 28
+  delay_ms_default: 500
+  delay_ms_between_sentences:
+  - 350
+  - 900
+  fallback_unknown_confidence_below: 0.04
+unity:
+  interaction_radius_m: 3.0
+  player_bubble_seconds: 2.2
+  npc_bubble_seconds_per_sentence: 2.4
+  endpoint: http://127.0.0.1:8008/api/v1/dialogue

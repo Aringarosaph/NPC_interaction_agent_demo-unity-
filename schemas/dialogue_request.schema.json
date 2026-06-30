@@ -1,0 +1,64 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dialogue_request.v1",
+  "title": "Dialogue Request",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "session_id",
+    "player_id",
+    "npc_id",
+    "player_text",
+    "is_in_range",
+    "world_state"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dialogue_request.v1"
+    },
+    "session_id": {
+      "type": "string"
+    },
+    "player_id": {
+      "type": "string"
+    },
+    "npc_id": {
+      "type": "string"
+    },
+    "player_text": {
+      "type": "string"
+    },
+    "distance_m": {
+      "type": "number"
+    },
+    "is_in_range": {
+      "type": "boolean"
+    },
+    "world_state": {
+      "type": "object",
+      "required": [
+        "location_id",
+        "game_time_label",
+        "quest_stage",
+        "relationship_score"
+      ],
+      "properties": {
+        "location_id": {
+          "type": "string"
+        },
+        "game_time_label": {
+          "type": "string"
+        },
+        "quest_stage": {
+          "type": "integer"
+        },
+        "relationship_score": {
+          "type": "number"
+        },
+        "debug_enabled": {
+          "type": "boolean"
+        }
+      }
+    }
+  }
+}

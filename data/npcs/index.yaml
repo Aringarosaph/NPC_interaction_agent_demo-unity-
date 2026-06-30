@@ -1,0 +1,21 @@
+schema_version: npc_index.v1
+default_language: zh-CN
+npcs:
+- npc_id: arknights_amiya
+  display_name_zh: 阿米娅
+  world_id: terra_arknights
+  profile_path: data/npcs/arknights_amiya/profile.yaml
+- npc_id: genshin_yae_miko
+  display_name_zh: 八重神子
+  world_id: teyvat_inazuma
+  profile_path: data/npcs/genshin_yae_miko/profile.yaml
+- npc_id: wuwa_jinhsi
+  display_name_zh: 今汐
+  world_id: solaris3_huanglong
+  profile_path: data/npcs/wuwa_jinhsi/profile.yaml
+global_policies:
+  cross_world_default: deny
+  unknown_answer: character_in_world_deflection
+  max_utterances: 3
+  max_sentence_chars: 28
+  copyright_note: Publicly available character/lore summaries were rewritten into short demo knowledge chunks. Do not copy official long dialogue or use as commercial character asset without rights clearance.

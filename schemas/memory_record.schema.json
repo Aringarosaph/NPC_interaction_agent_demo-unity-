@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "memory_record.v1",
+  "title": "Memory Record",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "memory_id",
+    "npc_id",
+    "player_id",
+    "memory_type",
+    "summary",
+    "detail",
+    "salience",
+    "confidence",
+    "created_at",
+    "last_seen_at",
+    "decay_policy",
+    "visibility",
+    "retrieval_keywords",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "memory_record.v1"
+    },
+    "memory_id": {
+      "type": "string"
+    },
+    "npc_id": {
+      "type": "string"
+    },
+    "player_id": {
+      "type": "string"
+    },
+    "memory_type": {
+      "enum": [
+        "relationship",
+        "promise",
+        "preference",
+        "fact",
+        "event",
+        "safety",
+        "demo_seed"
+      ]
+    },
+    "summary": {
+      "type": "string"
+    },
+    "detail": {
+      "type": "string"
+    },
+    "salience": {
+      "type": "number"
+    },
+    "confidence": {
+      "type": "number"
+    },
+    "created_at": {
+      "type": "string"
+    },
+    "last_seen_at": {
+      "type": "string"
+    },
+    "decay_policy": {
+      "enum": [
+        "never",
+        "session",
+        "days_7",
+        "days_30"
+      ]
+    },
+    "expires_at": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_turn_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "write_protected": {
+      "type": "boolean"
+    },
+    "visibility": {
+      "type": "object"
+    },
+    "retrieval_keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "status": {
+      "enum": [
+        "active",
+        "archived",
+        "deleted"
+      ]
+    }
+  }
+}

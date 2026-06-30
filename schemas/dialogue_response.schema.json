@@ -1,0 +1,96 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "dialogue_response.v1",
+  "title": "Dialogue Response",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "turn_id",
+    "npc_id",
+    "utterances",
+    "internal"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "dialogue_response.v1"
+    },
+    "turn_id": {
+      "type": "string"
+    },
+    "npc_id": {
+      "type": "string"
+    },
+    "utterances": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 3,
+      "items": {
+        "type": "object",
+        "required": [
+          "text",
+          "emotion",
+          "action",
+          "delay_ms"
+        ],
+        "properties": {
+          "text": {
+            "type": "string"
+          },
+          "emotion": {
+            "enum": [
+              "neutral",
+              "warm",
+              "concerned",
+              "resolute",
+              "teasing",
+              "amused",
+              "solemn",
+              "distant",
+              "cautious",
+              "gentle"
+            ]
+          },
+          "action": {
+            "enum": [
+              "idle",
+              "nod",
+              "look_at_player",
+              "small_smile",
+              "sigh",
+              "turn_away",
+              "thoughtful",
+              "bow",
+              "hand_on_chest"
+            ]
+          },
+          "delay_ms": {
+            "type": "integer"
+          }
+        }
+      }
+    },
+    "internal": {
+      "type": "object",
+      "properties": {
+        "used_knowledge_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "used_memory_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "memory_candidates": {
+          "type": "array"
+        },
+        "confidence": {
+          "type": "number"
+        }
+      }
+    }
+  }
+}

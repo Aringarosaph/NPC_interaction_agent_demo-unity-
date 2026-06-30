@@ -1,0 +1,26 @@
+{
+  "package_name": "portfolio_npc_rag_agent_pack",
+  "generated_at": "2026-06-29T23:27:21.902379+00:00",
+  "schema_versions": [
+    "npc_profile.v1",
+    "knowledge_chunk.v1",
+    "memory_record.v1",
+    "dialogue_request.v1",
+    "dialogue_response.v1"
+  ],
+  "npc_ids": [
+    "arknights_amiya",
+    "genshin_yae_miko",
+    "wuwa_jinhsi"
+  ],
+  "recommended_first_file": "README.md",
+  "codex_entrypoints": [
+    "codex_tasks/phase_00_bootstrap.md",
+    "codex_tasks/phase_01_backend_mock_dialogue.md",
+    "codex_tasks/phase_02_retrieval_and_debug.md",
+    "codex_tasks/phase_03_deepseek_json_output.md",
+    "codex_tasks/phase_04_memory_store.md",
+    "codex_tasks/phase_05_unity_whitebox.md",
+    "codex_tasks/phase_06_portfolio_polish.md"
+  ]
+}

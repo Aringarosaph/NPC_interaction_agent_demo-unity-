@@ -1,0 +1,46 @@
+# NPC RAG Agent Project Status
+
+## Current Decisions
+
+- Repository target: `https://github.com/Aringarosaph/NPC_interaction_agent_demo-unity-`
+- Branch: `main`
+- Unity editor: `6000.4.2f1`
+- Python runtime: `/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14`
+- GitHub CLI: `/opt/homebrew/bin/gh`
+- Public character names remain in use for this non-commercial portfolio demo.
+- Local secrets, runtime memory, virtual environments, and Unity generated files are not committed.
+
+## Phase Checklist
+
+- [x] Phase 00: repository initialized and source package organized.
+- [x] Phase 00: backend virtual environment created and health endpoint verified.
+- [ ] Phase 01: mock dialogue endpoint verified for all three NPCs.
+- [ ] Phase 02: retrieval debug endpoint and retrieval tests.
+- [ ] Phase 03: DeepSeek JSON output integration.
+- [ ] Phase 04: SQLite memory write/read flow.
+- [ ] Phase 05: Unity whitebox scene.
+- [ ] Phase 06: portfolio polish and demo material.
+
+## Notes For Continuity
+
+- Keep schemas in `schemas/` stable unless the user explicitly approves a schema migration.
+- Keep Unity client requests routed through local FastAPI; do not call DeepSeek directly from Unity.
+- Responses must remain 1-3 short utterances.
+- Cross-world, AI, Unity, backend, and system-prompt questions should hit boundary handling.
+- Python dependencies use compatibility ranges because the original scaffold pins tried to build old `scikit-learn==1.6.0` from source on Python 3.14.
+- Update this file whenever a phase starts, completes, or changes scope.
+
+## Local Environment Gaps
+
+- `python3` on PATH still points to macOS system Python 3.9.6.
+- Use the Python 3.14 path above explicitly until PATH is updated.
+- `gh` is installed but `gh auth status` currently reports an invalid token. Git push may still work via Git credentials; otherwise re-authenticate with `gh auth login -h github.com`.
+
+## Validation Log
+
+- 2026-06-30: Created `backend/.venv` with Python 3.14.6.
+- 2026-06-30: Installed backend dependencies from `backend/requirements.txt`.
+- 2026-06-30: Ran `python -m compileall app` successfully.
+- 2026-06-30: Started FastAPI locally on `127.0.0.1:8008`.
+- 2026-06-30: `GET /api/v1/health` returned `{"ok":true,"service":"portfolio-npc-rag-agent"}`.
+- 2026-06-30: Mock dialogue for `arknights_amiya` asking about `八重神子` returned one utterance and `used_knowledge_ids=["amiya_boundary_other_worlds"]`.

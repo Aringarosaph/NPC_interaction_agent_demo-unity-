@@ -1,0 +1,132 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "knowledge_chunk.v1",
+  "title": "Knowledge Chunk",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "chunk_id",
+    "npc_id",
+    "world_id",
+    "title",
+    "scope",
+    "visibility",
+    "tags",
+    "keywords",
+    "retrieval_text",
+    "npc_sayable",
+    "source_refs",
+    "confidence",
+    "priority"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": "knowledge_chunk.v1"
+    },
+    "chunk_id": {
+      "type": "string"
+    },
+    "npc_id": {
+      "type": "string"
+    },
+    "world_id": {
+      "type": "string"
+    },
+    "title": {
+      "type": "string"
+    },
+    "scope": {
+      "enum": [
+        "self_profile",
+        "world_common",
+        "faction",
+        "relationship",
+        "ability",
+        "plot_safe",
+        "demo_control",
+        "boundary"
+      ]
+    },
+    "visibility": {
+      "type": "object",
+      "required": [
+        "npc_ids",
+        "player_quest_stage_min",
+        "spoiler_level",
+        "cross_world_allowed"
+      ],
+      "properties": {
+        "npc_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "player_quest_stage_min": {
+          "type": "integer"
+        },
+        "spoiler_level": {
+          "type": "integer"
+        },
+        "cross_world_allowed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "tags": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "keywords": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "retrieval_text": {
+      "type": "string"
+    },
+    "npc_sayable": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "refusal_hint": {
+      "type": "string"
+    },
+    "source_refs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": [
+          "url",
+          "note"
+        ],
+        "properties": {
+          "url": {
+            "type": "string"
+          },
+          "note": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "confidence": {
+      "enum": [
+        "high",
+        "medium",
+        "low"
+      ]
+    },
+    "priority": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": "string"
+    }
+  }
+}
