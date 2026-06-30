@@ -115,3 +115,4 @@
   - `BackendDialoguePlayModeSmoke.Run` opens `Scene_PortfolioNpcRag`, enters Play Mode, sends a real Unity client request to local FastAPI, validates the NPC response, and exits with a batchmode status code.
   - Smoke run completed with `Unity backend Play Mode smoke passed.` and backend logged `POST /api/v1/dialogue HTTP/1.1" 200 OK`.
 - 2026-06-30: Added `WhiteboxSceneBuilder.ClearChineseFontDynamicData` so Play Mode smoke clears TMP runtime glyph cache before exit and keeps font asset diffs clean.
+- 2026-06-30: Rewrote the root `README.md` as an interviewer-facing product guide with project overview, highlights, quick start, backend on/off commands, recording flow, API example, validation commands, layout, and licensing notes.
