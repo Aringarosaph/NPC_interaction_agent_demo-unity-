@@ -5,10 +5,13 @@ public class NpcAgentMarker : MonoBehaviour
     public string npcId;
     public string displayName;
     public float interactionRadius = 3f;
+    public Transform rangeCenter;
     public Transform bubbleAnchor;
+
+    public Vector3 RangeCenterPosition => rangeCenter != null ? rangeCenter.position : transform.position;
 
     private void OnDrawGizmosSelected()
     {
-        Gizmos.DrawWireSphere(transform.position, interactionRadius);
+        Gizmos.DrawWireSphere(RangeCenterPosition, interactionRadius);
     }
 }

@@ -20,9 +20,16 @@ public class DialogueRangeDetector : MonoBehaviour
     {
         CurrentNpc = null;
         CurrentDistance = float.MaxValue;
+        if (player == null) return;
+        if (npcs == null || npcs.Length == 0)
+        {
+            npcs = FindObjectsByType<NpcAgentMarker>(FindObjectsInactive.Exclude);
+        }
+
         foreach (var npc in npcs)
         {
-            float d = Vector3.Distance(player.position, npc.transform.position);
+            if (npc == null) continue;
+            float d = Vector3.Distance(player.position, npc.RangeCenterPosition);
             if (d <= npc.interactionRadius && d < CurrentDistance)
             {
                 CurrentNpc = npc;

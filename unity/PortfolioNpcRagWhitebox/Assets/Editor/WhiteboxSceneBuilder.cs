@@ -114,9 +114,9 @@ public static class WhiteboxSceneBuilder
         WhiteboxPlayerController playerController = RequireComponent<WhiteboxPlayerController>(player);
         RequireComponent<CharacterController>(player);
 
-        RequireNpc("NPC_Amiya_Capsule", "arknights_amiya");
-        RequireNpc("NPC_YaeMiko_Capsule", "genshin_yae_miko");
-        RequireNpc("NPC_Jinhsi_Capsule", "wuwa_jinhsi");
+        RequireNpc("arknights_amiya");
+        RequireNpc("genshin_yae_miko");
+        RequireNpc("wuwa_jinhsi");
 
         GameObject cameraObject = RequireObject("Main Camera");
         SimpleThirdPersonCamera camera = RequireComponent<SimpleThirdPersonCamera>(cameraObject);
@@ -243,22 +243,38 @@ public static class WhiteboxSceneBuilder
         marker.npcId = npcId;
         marker.displayName = displayName;
         marker.interactionRadius = 3f;
+        marker.rangeCenter = npc.transform;
         marker.bubbleAnchor = CreateBubbleAnchor(npc.transform, "BubbleAnchor", new Vector3(0f, 2.95f, 0f));
         CreateNameplate(npc.transform, displayName, new Vector3(0f, 2.25f, 0f));
         return marker;
     }
 
-    private static void RequireNpc(string objectName, string expectedNpcId)
+    private static void RequireNpc(string expectedNpcId)
     {
-        GameObject npc = RequireObject(objectName);
-        NpcAgentMarker marker = RequireComponent<NpcAgentMarker>(npc);
-        Require(marker.npcId == expectedNpcId, $"{objectName} has unexpected npcId '{marker.npcId}'.");
-        Require(marker.bubbleAnchor != null, $"{objectName} is missing a bubble anchor.");
-        Require(marker.bubbleAnchor.GetComponentInChildren<SpeechBubbleController>() != null, $"{objectName} is missing a speech bubble.");
+        NpcAgentMarker marker = FindNpcById(expectedNpcId);
+        Require(marker != null, $"NPC marker with id '{expectedNpcId}' was not found.");
+        GameObject npc = marker.gameObject;
+        Require(marker.rangeCenter == null || marker.rangeCenter.gameObject == npc, $"{npc.name} range center should stay on the NPC mesh/root object.");
+        Require(marker.bubbleAnchor != null, $"{npc.name} is missing a bubble anchor.");
+        Require(marker.bubbleAnchor.GetComponentInChildren<SpeechBubbleController>() != null, $"{npc.name} is missing a speech bubble.");
+        Require(npc.GetComponentInChildren<CapsuleCollider>() != null, $"{npc.name} is missing a capsule collider.");
         Transform nameplate = npc.transform.Find("Nameplate");
-        Require(nameplate != null, $"{objectName} is missing a nameplate.");
-        Require(nameplate.GetComponentInChildren<TMP_Text>() != null, $"{objectName} nameplate is missing text.");
-        Require(marker.bubbleAnchor.localPosition.y > nameplate.localPosition.y, $"{objectName} bubble should be above its nameplate.");
+        Require(nameplate != null, $"{npc.name} is missing a nameplate.");
+        Require(nameplate.GetComponentInChildren<TMP_Text>() != null, $"{npc.name} nameplate is missing text.");
+        Require(marker.bubbleAnchor.position.y > nameplate.position.y, $"{npc.name} bubble should be above its nameplate.");
+    }
+
+    private static NpcAgentMarker FindNpcById(string npcId)
+    {
+        NpcAgentMarker[] markers = Object.FindObjectsByType<NpcAgentMarker>(FindObjectsInactive.Exclude, FindObjectsSortMode.None);
+        foreach (NpcAgentMarker marker in markers)
+        {
+            if (marker != null && marker.npcId == npcId)
+            {
+                return marker;
+            }
+        }
+        return null;
     }
 
     private static GameObject RequireObject(string objectName)

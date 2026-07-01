@@ -117,3 +117,8 @@
 - 2026-06-30: Added `WhiteboxSceneBuilder.ClearChineseFontDynamicData` so Play Mode smoke clears TMP runtime glyph cache before exit and keeps font asset diffs clean.
 - 2026-06-30: Rewrote the root `README.md` as an interviewer-facing product guide with project overview, highlights, quick start, backend on/off commands, recording flow, API example, validation commands, layout, and licensing notes.
 - 2026-06-30: Converted the root `README.md` product guide to Chinese while keeping runnable commands, paths, and API fields copyable.
+- 2026-07-01: Added art-scene dialogue rebinding for the imported nature scene and character meshes:
+  - `NPC_Amiya_Mesh`, `NPC_YaeMiko_Mesh`, and `NPC_Jinxi_Mesh` are bound as the active NPC roots/range centers.
+  - Each art NPC receives an editable `NpcInteractionCapsule` child collider using the original whitebox capsule sizing as a starting point.
+  - Unity scene validation and Play Mode backend smoke passed after the art-scene migration.
+  - Scene dependency analysis found 222 actually used art assets, about 299.6 MB before metadata; `T_SNB_Skybox_02.tga` is not used by the current scene and is intentionally left out.
