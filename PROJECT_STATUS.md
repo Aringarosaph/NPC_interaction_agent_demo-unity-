@@ -146,3 +146,12 @@
   - `cd backend && .venv/bin/python -m pytest -q`; 17 tests and 3 subtests passed.
   - `cd backend && .venv/bin/python -m unittest discover -s tests`; 13 tests passed.
   - `cd backend && .venv/bin/python -m compileall app tests`; passed.
+- 2026-07-07: Agent Upgrade Batch 1.3 added a lightweight validated tool system:
+  - Added `backend/app/tools/` with tool specs, execution context/results, registry validation, and in-memory game tools.
+  - Initial tools: `get_player_state`, `get_quest_state`, `start_quest`, `advance_quest`, `update_relationship`, `grant_item`, and `emit_world_event`.
+  - This stage intentionally uses in-memory state; Batch 1.4 will wire tools to SQLite `StateStore`.
+- 2026-07-07: Batch 1.3 backend validation passed:
+  - `cd backend && .venv/bin/python -m pytest -q tests/test_tool_registry.py`; 7 tests passed.
+  - `cd backend && .venv/bin/python -m pytest -q`; 24 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 20 tests passed.
+  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
