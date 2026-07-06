@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Literal, Optional
 from pydantic import BaseModel, Field
 
 
@@ -43,6 +43,57 @@ class DialogueResponse(BaseModel):
     npc_id: str
     utterances: List[Utterance]
     internal: InternalDebug = Field(default_factory=InternalDebug)
+
+
+class AgentPlan(BaseModel):
+    intent: str
+    goal: str
+    required_knowledge: List[str] = Field(default_factory=list)
+    proposed_tools: List[str] = Field(default_factory=list)
+    risk_flags: List[str] = Field(default_factory=list)
+    public_reason: str
+
+
+class ToolCall(BaseModel):
+    call_id: str
+    tool_name: str
+    arguments: Dict[str, Any] = Field(default_factory=dict)
+    reason: str
+
+
+class ToolResult(BaseModel):
+    call_id: str
+    tool_name: str
+    ok: bool
+    result: Dict[str, Any] = Field(default_factory=dict)
+    error: Optional[str] = None
+
+
+class WorldEvent(BaseModel):
+    event_id: str
+    event_type: str
+    payload: Dict[str, Any] = Field(default_factory=dict)
+    player_visible: bool = True
+
+
+class AgentTrace(BaseModel):
+    used_knowledge_ids: List[str] = Field(default_factory=list)
+    used_memory_ids: List[str] = Field(default_factory=list)
+    plan: Optional[AgentPlan] = None
+    tool_calls: List[ToolCall] = Field(default_factory=list)
+    tool_results: List[ToolResult] = Field(default_factory=list)
+    memory_candidates: List[Dict[str, Any]] = Field(default_factory=list)
+    reflection: Optional[Dict[str, Any]] = None
+    confidence: float = Field(default=0.0, ge=0.0, le=1.0)
+
+
+class DialogueResponseV2(BaseModel):
+    schema_version: Literal["dialogue_response.v2"] = "dialogue_response.v2"
+    turn_id: str
+    npc_id: str
+    utterances: List[Utterance]
+    world_events: List[WorldEvent] = Field(default_factory=list)
+    trace: AgentTrace = Field(default_factory=AgentTrace)
 
 
 class RetrievedChunk(BaseModel):

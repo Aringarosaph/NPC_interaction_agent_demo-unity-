@@ -1,0 +1,69 @@
+{
+  "schema_version": "dialogue_response.v2",
+  "turn_id": "turn_demo_001",
+  "npc_id": "arknights_amiya",
+  "utterances": [
+    {
+      "text": "我明白了，博士。",
+      "emotion": "gentle",
+      "action": "nod",
+      "delay_ms": 500
+    }
+  ],
+  "world_events": [
+    {
+      "event_id": "evt_demo_quest_started",
+      "event_type": "quest_started",
+      "payload": {
+        "quest_id": "shared_field_request",
+        "stage": 1,
+        "status": "active"
+      },
+      "player_visible": true
+    }
+  ],
+  "trace": {
+    "used_knowledge_ids": [
+      "amiya_rhodes_mission"
+    ],
+    "used_memory_ids": [],
+    "plan": {
+      "intent": "accept_quest",
+      "goal": "Start the current NPC task after the player agrees to help.",
+      "required_knowledge": [
+        "amiya_rhodes_mission"
+      ],
+      "proposed_tools": [
+        "start_quest"
+      ],
+      "risk_flags": [],
+      "public_reason": "玩家明确表示愿意帮忙，因此可以开启任务。"
+    },
+    "tool_calls": [
+      {
+        "call_id": "call_demo_start_quest",
+        "tool_name": "start_quest",
+        "arguments": {
+          "quest_id": "shared_field_request"
+        },
+        "reason": "玩家接受了当前 NPC 的请求。"
+      }
+    ],
+    "tool_results": [
+      {
+        "call_id": "call_demo_start_quest",
+        "tool_name": "start_quest",
+        "ok": true,
+        "result": {
+          "quest_id": "shared_field_request",
+          "stage": 1,
+          "status": "active"
+        },
+        "error": null
+      }
+    ],
+    "memory_candidates": [],
+    "reflection": null,
+    "confidence": 0.86
+  }
+}

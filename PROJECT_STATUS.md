@@ -137,3 +137,12 @@
 - 2026-07-07: Baseline backend tests before v2 work passed:
   - `cd backend && .venv/bin/python -m pytest -q`; 13 tests and 3 subtests passed.
   - `cd backend && .venv/bin/python -m unittest discover -s tests`; 9 tests passed.
+- 2026-07-07: Agent Upgrade Batch 1.2 added additive v2 response contract models:
+  - `AgentPlan`, `ToolCall`, `ToolResult`, `WorldEvent`, `AgentTrace`, and `DialogueResponseV2`.
+  - Added v2 example payloads under `schemas/`.
+  - Verified v1 `DialogueResponse` remains unchanged by model tests.
+- 2026-07-07: Batch 1.2 backend validation passed:
+  - `cd backend && .venv/bin/python -m pytest -q tests/test_models_v2.py`; 4 tests passed.
+  - `cd backend && .venv/bin/python -m pytest -q`; 17 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 13 tests passed.
+  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
