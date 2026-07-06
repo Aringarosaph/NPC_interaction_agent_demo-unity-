@@ -32,11 +32,13 @@ public static class ArtSceneDialogueBinder
         TMP_FontAsset font = RequireChineseFont();
 
         GameObject player = RequireObject("PlayerCapsule");
+        GameObject canvasObject = RequireObject("Canvas");
         WhiteboxPlayerController playerController = RequireComponent<WhiteboxPlayerController>(player);
         SimpleThirdPersonCamera followCamera = RequireComponent<SimpleThirdPersonCamera>(RequireObject("Main Camera"));
         TMP_Text currentNpcLabel = RequireObject("CurrentNpcLabel").GetComponent<TMP_Text>();
         TMP_InputField inputField = RequireObject("ChatInput").GetComponent<TMP_InputField>();
         Button sendButton = RequireObject("SendButton").GetComponent<Button>();
+        AgentDebugPanelController agentDebugPanel = EnsureAgentDebugPanel(canvasObject.transform, font);
 
         DialogueRangeDetector rangeDetector = RequireComponent<DialogueRangeDetector>(RequireObject("DialogueSystem"));
         NpcDialogueClient dialogueClient = rangeDetector.GetComponent<NpcDialogueClient>();
@@ -47,7 +49,10 @@ public static class ArtSceneDialogueBinder
         rangeDetector.player = player.transform;
         rangeDetector.currentNpcLabel = currentNpcLabel;
         dialogueClient.endpoint = "http://127.0.0.1:8008/api/v1/dialogue";
+        dialogueClient.v2Endpoint = "http://127.0.0.1:8008/api/v2/dialogue";
+        dialogueClient.useV2Api = true;
         dialogueClient.playerBubble = FindPlayerBubble(player);
+        dialogueClient.agentDebugPanel = agentDebugPanel;
         chatInput.inputField = inputField;
         chatInput.sendButton = sendButton;
         chatInput.rangeDetector = rangeDetector;
@@ -211,6 +216,53 @@ public static class ArtSceneDialogueBinder
         Transform anchor = player.transform.Find("BubbleAnchor");
         if (anchor == null) return player.GetComponentInChildren<SpeechBubbleController>(true);
         return anchor.GetComponentInChildren<SpeechBubbleController>(true);
+    }
+
+    private static AgentDebugPanelController EnsureAgentDebugPanel(Transform parent, TMP_FontAsset font)
+    {
+        GameObject root = EnsureChild(parent, "AgentDebugPanel");
+        RectTransform rect = EnsureRectTransform(root);
+        rect.anchorMin = new Vector2(1f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(1f, 1f);
+        rect.anchoredPosition = new Vector2(-18f, -18f);
+        rect.sizeDelta = new Vector2(390f, 250f);
+        Image image = EnsureComponent<Image>(root);
+        image.color = new Color(0.04f, 0.05f, 0.06f, 0.82f);
+
+        AgentDebugPanelController panel = EnsureComponent<AgentDebugPanelController>(root);
+        panel.questStatusText = EnsurePanelText(root.transform, "QuestStatusText", "任务: 无", new Vector2(14f, -14f), new Vector2(362f, 54f), 16f, font);
+        panel.relationshipText = EnsurePanelText(root.transform, "RelationshipText", "关系: 0 (neutral)", new Vector2(14f, -76f), new Vector2(362f, 24f), 16f, font);
+        panel.inventoryText = EnsurePanelText(root.transform, "InventoryText", "背包: 无新增", new Vector2(14f, -108f), new Vector2(362f, 44f), 16f, font);
+        panel.traceText = EnsurePanelText(root.transform, "AgentTraceText", "等待对话。", new Vector2(14f, -160f), new Vector2(362f, 78f), 14f, font);
+        EditorUtility.SetDirty(root);
+        EditorUtility.SetDirty(panel);
+        return panel;
+    }
+
+    private static TMP_Text EnsurePanelText(Transform parent, string name, string value, Vector2 position, Vector2 size, float fontSize, TMP_FontAsset font)
+    {
+        GameObject textObject = EnsureChild(parent, name);
+        RectTransform rect = EnsureRectTransform(textObject);
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+
+        TMP_Text text = EnsureComponent<TextMeshProUGUI>(textObject);
+        text.font = font;
+        if (string.IsNullOrEmpty(text.text))
+        {
+            text.text = value;
+        }
+        text.fontSize = fontSize;
+        text.alignment = TextAlignmentOptions.TopLeft;
+        text.color = Color.white;
+        text.textWrappingMode = TextWrappingModes.Normal;
+        EditorUtility.SetDirty(textObject);
+        EditorUtility.SetDirty(text);
+        return text;
     }
 
     private static Bounds CalculateRendererBounds(GameObject obj)

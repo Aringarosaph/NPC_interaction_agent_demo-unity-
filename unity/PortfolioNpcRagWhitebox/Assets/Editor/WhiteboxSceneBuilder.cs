@@ -74,7 +74,7 @@ public static class WhiteboxSceneBuilder
         NpcAgentMarker yae = CreateNpc("NPC_YaeMiko_Capsule", "genshin_yae_miko", "八重神子", new Vector3(0f, 1f, 5.5f), yaeMaterial);
         NpcAgentMarker jinhsi = CreateNpc("NPC_Jinhsi_Capsule", "wuwa_jinhsi", "今汐", new Vector3(4f, 1f, 3.5f), jinhsiMaterial);
 
-        GameObject canvas = CreateScreenCanvas(out TMP_InputField inputField, out Button sendButton, out TMP_Text currentNpcLabel);
+        GameObject canvas = CreateScreenCanvas(out TMP_InputField inputField, out Button sendButton, out TMP_Text currentNpcLabel, out AgentDebugPanelController agentDebugPanel);
         GameObject dialogueSystem = new GameObject("DialogueSystem");
         DialogueRangeDetector rangeDetector = dialogueSystem.AddComponent<DialogueRangeDetector>();
         rangeDetector.player = player.transform;
@@ -82,7 +82,10 @@ public static class WhiteboxSceneBuilder
 
         NpcDialogueClient dialogueClient = dialogueSystem.AddComponent<NpcDialogueClient>();
         dialogueClient.endpoint = "http://127.0.0.1:8008/api/v1/dialogue";
+        dialogueClient.v2Endpoint = "http://127.0.0.1:8008/api/v2/dialogue";
+        dialogueClient.useV2Api = true;
         dialogueClient.playerBubble = playerBubbleAnchor.GetComponentInChildren<SpeechBubbleController>();
+        dialogueClient.agentDebugPanel = agentDebugPanel;
 
         PlayerChatInput chatInput = dialogueSystem.AddComponent<PlayerChatInput>();
         chatInput.inputField = inputField;
@@ -127,6 +130,14 @@ public static class WhiteboxSceneBuilder
         Require(rangeDetector.player == player.transform, "Range detector player binding is missing.");
         NpcDialogueClient dialogueClient = RequireComponent<NpcDialogueClient>(dialogueSystem);
         Require(dialogueClient.endpoint == "http://127.0.0.1:8008/api/v1/dialogue", "Dialogue endpoint is not the local FastAPI endpoint.");
+        Require(dialogueClient.v2Endpoint == "http://127.0.0.1:8008/api/v2/dialogue", "Dialogue v2 endpoint is not the local FastAPI endpoint.");
+        Require(dialogueClient.useV2Api, "Dialogue client should default to v2 API.");
+        AgentDebugPanelController agentDebugPanel = RequireComponent<AgentDebugPanelController>(RequireObject("AgentDebugPanel"));
+        Require(agentDebugPanel.questStatusText != null, "Agent debug panel is missing quest text.");
+        Require(agentDebugPanel.relationshipText != null, "Agent debug panel is missing relationship text.");
+        Require(agentDebugPanel.inventoryText != null, "Agent debug panel is missing inventory text.");
+        Require(agentDebugPanel.traceText != null, "Agent debug panel is missing trace text.");
+        Require(dialogueClient.agentDebugPanel == agentDebugPanel, "Dialogue client is not bound to the agent debug panel.");
         PlayerChatInput chatInput = RequireComponent<PlayerChatInput>(dialogueSystem);
         Require(chatInput.playerController == playerController, "Chat input is not bound to the player controller.");
         Require(chatInput.followCamera == camera, "Chat input is not bound to the follow camera.");
@@ -392,7 +403,7 @@ public static class WhiteboxSceneBuilder
         text.color = Color.white;
     }
 
-    private static GameObject CreateScreenCanvas(out TMP_InputField inputField, out Button sendButton, out TMP_Text currentNpcLabel)
+    private static GameObject CreateScreenCanvas(out TMP_InputField inputField, out Button sendButton, out TMP_Text currentNpcLabel, out AgentDebugPanelController agentDebugPanel)
     {
         GameObject eventSystem = new GameObject("EventSystem");
         eventSystem.AddComponent<EventSystem>();
@@ -409,7 +420,49 @@ public static class WhiteboxSceneBuilder
         currentNpcLabel = CreateUiText(canvasObject.transform, "CurrentNpcLabel", "未进入 NPC 对话范围", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(0f, 116f), new Vector2(540f, 38f), 22f);
         inputField = CreateInputField(canvasObject.transform);
         sendButton = CreateButton(canvasObject.transform, "SendButton", "发送", new Vector2(0.5f, 0f), new Vector2(0.5f, 0f), new Vector2(382f, 58f), new Vector2(120f, 48f));
+        agentDebugPanel = CreateAgentDebugPanel(canvasObject.transform);
         return canvasObject;
+    }
+
+    private static AgentDebugPanelController CreateAgentDebugPanel(Transform parent)
+    {
+        GameObject root = new GameObject("AgentDebugPanel");
+        root.transform.SetParent(parent, false);
+        RectTransform rect = root.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(1f, 1f);
+        rect.anchorMax = new Vector2(1f, 1f);
+        rect.pivot = new Vector2(1f, 1f);
+        rect.anchoredPosition = new Vector2(-18f, -18f);
+        rect.sizeDelta = new Vector2(390f, 250f);
+        Image image = root.AddComponent<Image>();
+        image.color = new Color(0.04f, 0.05f, 0.06f, 0.82f);
+
+        AgentDebugPanelController panel = root.AddComponent<AgentDebugPanelController>();
+        panel.questStatusText = CreatePanelText(root.transform, "QuestStatusText", "任务: 无", new Vector2(14f, -14f), new Vector2(362f, 54f), 16f);
+        panel.relationshipText = CreatePanelText(root.transform, "RelationshipText", "关系: 0 (neutral)", new Vector2(14f, -76f), new Vector2(362f, 24f), 16f);
+        panel.inventoryText = CreatePanelText(root.transform, "InventoryText", "背包: 无新增", new Vector2(14f, -108f), new Vector2(362f, 44f), 16f);
+        panel.traceText = CreatePanelText(root.transform, "AgentTraceText", "等待对话。", new Vector2(14f, -160f), new Vector2(362f, 78f), 14f);
+        return panel;
+    }
+
+    private static TMP_Text CreatePanelText(Transform parent, string name, string value, Vector2 position, Vector2 size, float fontSize)
+    {
+        GameObject textObject = new GameObject(name);
+        textObject.transform.SetParent(parent, false);
+        RectTransform rect = textObject.AddComponent<RectTransform>();
+        rect.anchorMin = new Vector2(0f, 1f);
+        rect.anchorMax = new Vector2(0f, 1f);
+        rect.pivot = new Vector2(0f, 1f);
+        rect.anchoredPosition = position;
+        rect.sizeDelta = size;
+        TMP_Text text = textObject.AddComponent<TextMeshProUGUI>();
+        ApplyProjectFont(text);
+        text.text = value;
+        text.fontSize = fontSize;
+        text.alignment = TextAlignmentOptions.TopLeft;
+        text.color = Color.white;
+        text.textWrappingMode = TextWrappingModes.Normal;
+        return text;
     }
 
     private static TMP_Text CreateUiText(Transform parent, string name, string value, Vector2 anchorMin, Vector2 anchorMax, Vector2 position, Vector2 size, float fontSize)

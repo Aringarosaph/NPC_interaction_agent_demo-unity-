@@ -11,6 +11,7 @@ public class NpcDialogueClient : MonoBehaviour
     public string sessionId = "local_session_001";
     public string playerId = "local_player";
     public SpeechBubbleController playerBubble;
+    public AgentDebugPanelController agentDebugPanel;
     public float npcBubbleSeconds = 2.4f;
 
     [System.NonSerialized] public DialogueResponseDto lastResponse;
@@ -50,6 +51,7 @@ public class NpcDialogueClient : MonoBehaviour
             if (lastResponseV2 != null)
             {
                 lastUsedV2 = true;
+                if (agentDebugPanel != null) agentDebugPanel.ApplyResponse(lastResponseV2);
                 yield return ShowUtterances(
                     npc,
                     lastResponseV2.utterances,
@@ -68,6 +70,7 @@ public class NpcDialogueClient : MonoBehaviour
             yield break;
         }
 
+        if (agentDebugPanel != null) agentDebugPanel.ApplyV1Fallback();
         yield return ShowUtterances(
             npc,
             lastResponse.utterances,

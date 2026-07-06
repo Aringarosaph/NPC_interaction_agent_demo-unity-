@@ -24,7 +24,7 @@
 - [x] Phase 05: Unity whitebox scene and Play Mode backend dialogue smoke.
 - [ ] Phase 06: portfolio polish and demo material.
 - [x] Agent Upgrade Batch 1: backend v2 agent core.
-- [ ] Agent Upgrade Batch 2: Unity v2 integration and debug UI.
+- [x] Agent Upgrade Batch 2: Unity v2 integration and debug UI.
 - [ ] Agent Upgrade Batch 3: practical memory policy, self-check, and eval runner.
 - [ ] Agent Upgrade Batch 4: portfolio documentation and final validation.
 
@@ -180,5 +180,13 @@
 - 2026-07-07: Batch 2.1 validation passed:
   - `cd backend && .venv/bin/python -m pytest -q`; 32 tests and 3 subtests passed.
   - `cd backend && .venv/bin/python -m unittest discover -s tests`; 28 tests passed, with the known non-fatal ResourceWarning.
+  - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
+  - Unity Play Mode backend smoke hit `POST /api/v2/dialogue` and passed with `Unity backend Play Mode smoke passed.`
+- 2026-07-07: Agent Upgrade Batch 2.2 added Unity agent debug UI:
+  - Added an in-game `AgentDebugPanel` bound to `NpcDialogueClient`.
+  - The panel displays v2 quest events, relationship changes, inventory grants, planner intent, used knowledge/memory IDs, tool calls, and tool results.
+  - Rebound the current art scene so the panel is present alongside the existing character meshes and dialogue UI.
+- 2026-07-07: Batch 2.2 validation passed:
+  - Unity batchmode `ArtSceneDialogueBinder.BindArtSceneDialogue`; completed with `Art scene dialogue bindings refreshed.`
   - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
   - Unity Play Mode backend smoke hit `POST /api/v2/dialogue` and passed with `Unity backend Play Mode smoke passed.`
