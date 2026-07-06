@@ -10,6 +10,8 @@
 - Unity license: Unity Personal, verified by batchmode editor runs.
 - Public character names remain in use for this non-commercial portfolio demo.
 - Local secrets, runtime memory, virtual environments, and Unity generated files are not committed.
+- Agent upgrade scope accepted on 2026-07-07: build a practical v2 game NPC agent loop using the existing three NPCs and current Unity art scene; do not add an original NPC pack, SFT/DPO dry-run, CI, or broad multi-agent simulation in this upgrade.
+- Agent upgrade plan is tracked in `docs/09_agent_upgrade_execution_plan.md`.
 
 ## Phase Checklist
 
@@ -21,6 +23,10 @@
 - [x] Phase 04: SQLite memory write/read flow.
 - [x] Phase 05: Unity whitebox scene and Play Mode backend dialogue smoke.
 - [ ] Phase 06: portfolio polish and demo material.
+- [ ] Agent Upgrade Batch 1: backend v2 agent core.
+- [ ] Agent Upgrade Batch 2: Unity v2 integration and debug UI.
+- [ ] Agent Upgrade Batch 3: practical memory policy, self-check, and eval runner.
+- [ ] Agent Upgrade Batch 4: portfolio documentation and final validation.
 
 ## Notes For Continuity
 
@@ -122,3 +128,8 @@
   - Each art NPC receives an editable `NpcInteractionCapsule` child collider using the original whitebox capsule sizing as a starting point.
   - Unity scene validation and Play Mode backend smoke passed after the art-scene migration.
   - Scene dependency analysis found 222 actually used art assets, about 299.6 MB before metadata; `T_SNB_Skybox_02.tga` is not used by the current scene and is intentionally left out.
+- 2026-07-07: Accepted the agent upgrade route:
+  - Preserve the current `dialogue_response.v1` behavior while adding a v2 schema and `/api/v2/dialogue`.
+  - Implement validated backend tool use, SQLite world state, planner trace, Unity v2 debug/state UI, practical memory policy, lightweight self-check, and eval reporting.
+  - Keep the existing scene, character models, and three NPCs; new task content should be designed around the existing cast.
+  - Exclude original NPC pack, SFT/DPO dry-run, CI, and broad multi-agent work from this upgrade.
