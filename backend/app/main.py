@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import SERVER_HOST, SERVER_PORT
-from .models import DialogueRequest, DialogueResponse, DebugRetrieveResponse, DebugMemoriesResponse
+from .models import DialogueRequest, DialogueResponse, DialogueResponseV2, DebugRetrieveResponse, DebugMemoriesResponse
 from .orchestrator import DialogueOrchestrator
 
 app = FastAPI(title="Portfolio NPC RAG Agent", version="0.1.0")
@@ -33,6 +33,16 @@ async def dialogue(req: DialogueRequest) -> DialogueResponse:
         raise HTTPException(status_code=404, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"dialogue_failed: {e}")
+
+
+@app.post("/api/v2/dialogue", response_model=DialogueResponseV2)
+async def dialogue_v2(req: DialogueRequest) -> DialogueResponseV2:
+    try:
+        return await orchestrator.handle_v2(req)
+    except KeyError as e:
+        raise HTTPException(status_code=404, detail=str(e))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"dialogue_v2_failed: {e}")
 
 
 @app.get("/api/v1/debug/retrieve", response_model=DebugRetrieveResponse)

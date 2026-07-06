@@ -23,7 +23,7 @@
 - [x] Phase 04: SQLite memory write/read flow.
 - [x] Phase 05: Unity whitebox scene and Play Mode backend dialogue smoke.
 - [ ] Phase 06: portfolio polish and demo material.
-- [ ] Agent Upgrade Batch 1: backend v2 agent core.
+- [x] Agent Upgrade Batch 1: backend v2 agent core.
 - [ ] Agent Upgrade Batch 2: Unity v2 integration and debug UI.
 - [ ] Agent Upgrade Batch 3: practical memory policy, self-check, and eval runner.
 - [ ] Agent Upgrade Batch 4: portfolio documentation and final validation.
@@ -163,3 +163,13 @@
   - `cd backend && .venv/bin/python -m pytest -q`; 28 tests and 3 subtests passed.
   - `cd backend && .venv/bin/python -m unittest discover -s tests`; 24 tests passed.
   - `cd backend && .venv/bin/python -m compileall app tests`; passed.
+- 2026-07-07: Agent Upgrade Batch 1.5 added the v2 agent loop:
+  - Added deterministic `AgentPlanner`.
+  - Added `DialogueOrchestrator.handle_v2` flow: retrieve, memory, state snapshot, plan, validated tool execution, final utterances, and trace.
+  - Added `POST /api/v2/dialogue` while preserving `/api/v1/dialogue`.
+- 2026-07-07: Batch 1.5 backend validation passed:
+  - `cd backend && .venv/bin/python -m pytest -q tests/test_dialogue_v2_agent_flow.py`; 4 tests passed.
+  - `cd backend && .venv/bin/python -m pytest -q`; 32 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 28 tests passed, with non-fatal ResourceWarning from process-level SQLite connections in the FastAPI app.
+  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
+  - FastAPI TestClient smoke for `/api/v2/dialogue` returned `dialogue_response.v2`, `start_quest`, and `quest_started`.
