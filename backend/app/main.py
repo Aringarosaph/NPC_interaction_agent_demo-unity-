@@ -70,12 +70,14 @@ def debug_memories(
     npc_id: str = Query(..., min_length=1),
     player_id: str = Query("local_player", min_length=1),
     include_default: bool = True,
+    include_superseded: bool = False,
 ) -> DebugMemoriesResponse:
     try:
         return orchestrator.debug_memories(
             npc_id=npc_id,
             player_id=player_id,
             include_default=include_default,
+            include_superseded=include_superseded,
         )
     except KeyError as e:
         raise HTTPException(status_code=404, detail=str(e))

@@ -9,6 +9,7 @@ from typing import Dict, List, Any
 
 from .models import MemorySnippet, MemoryDebugRecord
 from .config import BACKEND_DIR
+from .memory_policy import MemoryPolicy
 
 
 class MemoryStore:
@@ -16,6 +17,7 @@ class MemoryStore:
         self.db_path = db_path or (BACKEND_DIR / "local_memory.sqlite")
         self.conn = sqlite3.connect(str(self.db_path), check_same_thread=False)
         self.conn.row_factory = sqlite3.Row
+        self.policy = MemoryPolicy()
         self._init_db()
 
     def _init_db(self) -> None:
@@ -95,43 +97,57 @@ class MemoryStore:
         scored.sort(key=lambda x: x[0], reverse=True)
         return [MemorySnippet(memory_id=r["memory_id"], summary=r["summary"], detail=r["detail"], score=s) for s, r in scored[:limit]]
 
-    def list_records(self, npc_id: str, player_id: str, include_default: bool = True) -> List[MemoryDebugRecord]:
+    def list_records(
+        self,
+        npc_id: str,
+        player_id: str,
+        include_default: bool = True,
+        include_superseded: bool = False,
+    ) -> List[MemoryDebugRecord]:
+        statuses = ("active", "superseded") if include_superseded else ("active",)
+        placeholders = ",".join("?" for _ in statuses)
         if include_default:
             rows = self.conn.execute(
-                """
+                f"""
                 SELECT * FROM memories
-                WHERE npc_id = ? AND status = 'active' AND (player_id = ? OR player_id = '__default__')
-                ORDER BY write_protected ASC, salience DESC, last_seen_at DESC
+                WHERE npc_id = ? AND status IN ({placeholders}) AND (player_id = ? OR player_id = '__default__')
+                ORDER BY status ASC, write_protected ASC, salience DESC, last_seen_at DESC
                 """,
-                (npc_id, player_id),
+                (npc_id, *statuses, player_id),
             ).fetchall()
         else:
             rows = self.conn.execute(
-                """
+                f"""
                 SELECT * FROM memories
-                WHERE npc_id = ? AND player_id = ? AND status = 'active'
-                ORDER BY salience DESC, last_seen_at DESC
+                WHERE npc_id = ? AND player_id = ? AND status IN ({placeholders})
+                ORDER BY status ASC, salience DESC, last_seen_at DESC
                 """,
-                (npc_id, player_id),
+                (npc_id, player_id, *statuses),
             ).fetchall()
         return [self._row_to_debug_record(row) for row in rows]
 
     def write_candidate(self, npc_id: str, player_id: str, candidate: Dict[str, Any], source_turn_id: str) -> str | None:
-        if not candidate or not candidate.get("summary"):
+        decision = self.policy.prepare(candidate)
+        if not decision.accepted or decision.candidate is None:
             return None
-        memory_type = candidate.get("memory_type", "fact")
-        if memory_type not in {"promise", "preference", "relationship", "event", "fact"}:
-            return None
+        candidate = decision.candidate
+        memory_type = candidate["memory_type"]
         now = datetime.now(timezone.utc).isoformat()
         memory_id = candidate.get("memory_id") or f"mem_{npc_id}_{uuid.uuid4().hex[:12]}"
+        if self.policy.is_preferred_address(candidate):
+            self._supersede_preferred_address(
+                npc_id=npc_id,
+                player_id=player_id,
+                keep_memory_id=memory_id,
+            )
         record = {
             "memory_id": memory_id,
             "npc_id": npc_id,
             "player_id": player_id,
             "memory_type": memory_type,
-            "summary": candidate.get("summary", "")[:120],
-            "detail": candidate.get("detail", candidate.get("summary", ""))[:300],
-            "salience": float(candidate.get("salience", 0.5)),
+            "summary": candidate["summary"],
+            "detail": candidate["detail"],
+            "salience": candidate["salience"],
             "confidence": 0.75,
             "created_at": now,
             "last_seen_at": now,
@@ -145,6 +161,31 @@ class MemoryStore:
         }
         self.upsert_record(record)
         return memory_id
+
+    def _supersede_preferred_address(self, npc_id: str, player_id: str, keep_memory_id: str) -> None:
+        rows = self.conn.execute(
+            """
+            SELECT memory_id, summary, detail, retrieval_keywords FROM memories
+            WHERE npc_id = ? AND player_id = ? AND memory_type = 'preference'
+              AND status = 'active' AND write_protected = 0 AND memory_id != ?
+            """,
+            (npc_id, player_id, keep_memory_id),
+        ).fetchall()
+        for row in rows:
+            candidate_view = {
+                "memory_id": row["memory_id"],
+                "memory_type": "preference",
+                "summary": row["summary"],
+                "detail": row["detail"],
+                "retrieval_keywords": self._json_list(row["retrieval_keywords"]),
+            }
+            if not self.policy.is_preferred_address(candidate_view):
+                continue
+            self.conn.execute(
+                "UPDATE memories SET status = 'superseded' WHERE memory_id = ?",
+                (row["memory_id"],),
+            )
+        self.conn.commit()
 
     @staticmethod
     def _query_tokens(q: str) -> List[str]:

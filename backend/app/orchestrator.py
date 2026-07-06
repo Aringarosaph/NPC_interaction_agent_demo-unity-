@@ -101,7 +101,6 @@ class DialogueOrchestrator:
             sentence_max_chars=profile.get("speech", {}).get("sentence_max_chars", 28),
             max_utterances=profile.get("generation_policy", {}).get("max_response_utterances", 3),
         )
-        # MVP: write only explicit candidates returned by the model. Add stronger filtering in Phase 4.
         for candidate in response.internal.memory_candidates:
             self.memory_store.write_candidate(req.npc_id, req.player_id, candidate, source_turn_id=turn_id)
         return response
@@ -245,17 +244,25 @@ class DialogueOrchestrator:
             chunks=chunks,
         )
 
-    def debug_memories(self, npc_id: str, player_id: str, include_default: bool = True) -> DebugMemoriesResponse:
+    def debug_memories(
+        self,
+        npc_id: str,
+        player_id: str,
+        include_default: bool = True,
+        include_superseded: bool = False,
+    ) -> DebugMemoriesResponse:
         self.loader.get_bundle(npc_id)
         memories = self.memory_store.list_records(
             npc_id=npc_id,
             player_id=player_id,
             include_default=include_default,
+            include_superseded=include_superseded,
         )
         return DebugMemoriesResponse(
             npc_id=npc_id,
             player_id=player_id,
             include_default=include_default,
+            include_superseded=include_superseded,
             memories=memories,
         )
 

@@ -143,4 +143,5 @@ class DebugMemoriesResponse(BaseModel):
     npc_id: str
     player_id: str
     include_default: bool = True
+    include_superseded: bool = False
     memories: List[MemoryDebugRecord] = Field(default_factory=list)

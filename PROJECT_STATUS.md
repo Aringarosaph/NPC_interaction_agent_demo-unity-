@@ -190,3 +190,12 @@
   - Unity batchmode `ArtSceneDialogueBinder.BindArtSceneDialogue`; completed with `Art scene dialogue bindings refreshed.`
   - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
   - Unity Play Mode backend smoke hit `POST /api/v2/dialogue` and passed with `Unity backend Play Mode smoke passed.`
+- 2026-07-07: Agent Upgrade Batch 3.1 added practical memory policy:
+  - Added `backend/app/memory_policy.py` for allowed memory types, summary/detail/salience validation, sensitive implementation leakage filtering, and keyword sanitization.
+  - Memory writes now support `reflection` memory and supersede old active preferred-address memories when a new preferred address is written.
+  - Debug memory inspection now accepts `include_superseded` so replaced memories can be audited without affecting retrieval.
+- 2026-07-07: Batch 3.1 backend validation passed:
+  - `cd backend && .venv/bin/python -m pytest -q tests/test_memory_policy.py tests/test_memory_store.py`; 5 tests passed.
+  - `cd backend && .venv/bin/python -m pytest -q`; 35 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 31 tests passed, with the known non-fatal ResourceWarning.
+  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
