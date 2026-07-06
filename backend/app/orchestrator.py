@@ -13,6 +13,7 @@ from .prompt_builder import PromptBuilder
 from .llm_client import LlmClient
 from .response_normalizer import ResponseNormalizer
 from .agent_planner import AgentPlanner
+from .self_check import ResponseSelfChecker
 from .models import (
     AgentTrace,
     DebugMemoriesResponse,
@@ -37,6 +38,7 @@ class DialogueOrchestrator:
         state_store: StateStore | None = None,
         tool_registry: ToolRegistry | None = None,
         planner: AgentPlanner | None = None,
+        self_checker: ResponseSelfChecker | None = None,
     ):
         self.loader = DataLoader()
         bundles = self.loader.load_all()
@@ -52,6 +54,7 @@ class DialogueOrchestrator:
         self.state_store = state_store or StateStore()
         self.tool_registry = tool_registry or create_default_registry(self.state_store)
         self.agent_planner = planner or AgentPlanner()
+        self.self_checker = self_checker or ResponseSelfChecker()
         self.prompt_builder = PromptBuilder()
         self.llm = llm or LlmClient()
         self.normalizer = ResponseNormalizer()
@@ -197,6 +200,19 @@ class DialogueOrchestrator:
             sentence_max_chars=profile.get("speech", {}).get("sentence_max_chars", 28),
             max_utterances=profile.get("generation_policy", {}).get("max_response_utterances", 3),
         )
+        self_check = self.self_checker.check(
+            profile=profile,
+            request=req,
+            response=response_v1,
+            tool_results=tool_results,
+            world_events=world_events,
+            state_snapshot=state_snapshot,
+        )
+        reflection = self.self_checker.reflection(self_check)
+        if not self_check.passed:
+            response_v1.utterances = [self.self_checker.fallback_utterance(profile, self_check)]
+            response_v1.internal.confidence = min(response_v1.internal.confidence, 0.35)
+
         for candidate in response_v1.internal.memory_candidates:
             self.memory_store.write_candidate(req.npc_id, req.player_id, candidate, source_turn_id=turn_id)
 
@@ -212,6 +228,7 @@ class DialogueOrchestrator:
                 tool_calls=tool_calls,
                 tool_results=tool_results,
                 memory_candidates=response_v1.internal.memory_candidates,
+                reflection=reflection,
                 confidence=response_v1.internal.confidence,
             ),
         )

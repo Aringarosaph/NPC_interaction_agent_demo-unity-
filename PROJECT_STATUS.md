@@ -199,3 +199,12 @@
   - `cd backend && .venv/bin/python -m pytest -q`; 35 tests and 3 subtests passed.
   - `cd backend && .venv/bin/python -m unittest discover -s tests`; 31 tests passed, with the known non-fatal ResourceWarning.
   - `cd backend && .venv/bin/python -m compileall app tests`; passed.
+- 2026-07-07: Agent Upgrade Batch 3.2 added lightweight response self-check:
+  - Added `backend/app/self_check.py` for utterance count, Markdown/list format, implementation leakage, cross-world leakage, failed-tool success claims, and quest-state contradiction checks.
+  - `/api/v2/dialogue` now replaces unsafe normalized output with a conservative in-character fallback and records `trace.reflection`.
+  - Self-check confidence is capped when fallback repair is used.
+- 2026-07-07: Batch 3.2 backend validation passed:
+  - `cd backend && .venv/bin/python -m pytest -q tests/test_self_check.py tests/test_dialogue_v2_agent_flow.py`; 10 tests passed.
+  - `cd backend && .venv/bin/python -m pytest -q`; 41 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 37 tests passed, with the known non-fatal ResourceWarning.
+  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
