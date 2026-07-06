@@ -133,3 +133,7 @@
   - Implement validated backend tool use, SQLite world state, planner trace, Unity v2 debug/state UI, practical memory policy, lightweight self-check, and eval reporting.
   - Keep the existing scene, character models, and three NPCs; new task content should be designed around the existing cast.
   - Exclude original NPC pack, SFT/DPO dry-run, CI, and broad multi-agent work from this upgrade.
+- 2026-07-07: Agent Upgrade Batch 1.1 baseline audit completed in `docs/agent_upgrade_audit.md`.
+- 2026-07-07: Baseline backend tests before v2 work passed:
+  - `cd backend && .venv/bin/python -m pytest -q`; 13 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 9 tests passed.
