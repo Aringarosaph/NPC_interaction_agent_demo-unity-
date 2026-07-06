@@ -155,3 +155,11 @@
   - `cd backend && .venv/bin/python -m pytest -q`; 24 tests and 3 subtests passed.
   - `cd backend && .venv/bin/python -m unittest discover -s tests`; 20 tests passed.
   - `cd backend && .venv/bin/python -m compileall app tests`; passed.
+- 2026-07-07: Agent Upgrade Batch 1.4 added SQLite world state tracking in `backend/app/state_store.py`.
+  - Added persistent player state, NPC relationship, quest state, inventory item, and world event tables.
+  - Updated default game tool registry to use `StateStore`; retained in-memory state as a test/backend substitute.
+- 2026-07-07: Batch 1.4 backend validation passed:
+  - `cd backend && .venv/bin/python -m pytest -q tests/test_state_store.py tests/test_tool_registry.py`; 11 tests passed.
+  - `cd backend && .venv/bin/python -m pytest -q`; 28 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 24 tests passed.
+  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
