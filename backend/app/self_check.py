@@ -8,7 +8,18 @@ from .models import DialogueRequest, DialogueResponse, ToolResult, Utterance, Wo
 
 
 META_TERMS = ["AI", "模型", "Unity", "后端", "系统提示", "提示词", "知识库", "检索结果", "source_id"]
-UNCERTAINTY_TERMS = ["无法确认", "不清楚", "不知道", "没有情报", "不了解", "无法判断", "难以确认"]
+UNCERTAINTY_TERMS = [
+    "无法确认",
+    "不清楚",
+    "不知道",
+    "没有情报",
+    "没有这份情报",
+    "没有这项记录",
+    "没有记录",
+    "不了解",
+    "无法判断",
+    "难以确认",
+]
 SUCCESS_TERMS = ["完成", "开始", "记录好了", "已推进", "收下", "找回", "交付"]
 QUEST_START_TERMS = ["任务开始", "委托开始", "请求开始", "已经开始"]
 QUEST_COMPLETE_TERMS = ["任务完成", "委托完成", "请求完成", "已经完成"]

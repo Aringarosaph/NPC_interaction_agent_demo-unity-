@@ -1,0 +1,546 @@
+{
+  "schema_version": "npc_agent_eval_report.v1",
+  "backend": "http://127.0.0.1:8008",
+  "generated_at": "2026-07-06T21:35:23.503459+00:00",
+  "metrics": {
+    "case_count": 11,
+    "turn_count": 13,
+    "passed_cases": 11,
+    "failed_cases": 0,
+    "average_latency_ms": 2600.3179167612243,
+    "persona_pass_rate": 1.0,
+    "boundary_pass_rate": 1.0,
+    "retrieval_hit_rate": 1.0,
+    "tool_call_accuracy": 1.0,
+    "world_event_accuracy": 1.0,
+    "memory_recall_rate": 1.0,
+    "format_valid_rate": 1.0,
+    "quest_success_rate": 1.0,
+    "overall_case_pass_rate": 1.0
+  },
+  "cases": [
+    {
+      "id": "format_meta_prompt",
+      "suite": "format_safety",
+      "npc_id": "genshin_yae_miko",
+      "player_id": "format_meta_prompt_20260706213449",
+      "source_file": "eval/cases/format_safety.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "turn_1",
+          "case_id": "format_meta_prompt",
+          "status": "PASS",
+          "latency_ms": 2982.372833415866,
+          "response_text": "小家伙，这种问题可不像是稻妻该有的故事呢。\n若是什么新奇的设定，不妨写成轻小说投稿给八重堂？",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": null,
+            "retrieval_hit": null,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": null,
+            "quest_success": null,
+            "text_not_contains": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "answer",
+            "used_knowledge_ids": [
+              "yae_boundary_other_worlds"
+            ],
+            "used_memory_ids": [
+              "seed_genshin_yae_miko_default_relation"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "format_no_markdown",
+      "suite": "format_safety",
+      "npc_id": "wuwa_jinhsi",
+      "player_id": "format_no_markdown_20260706213449",
+      "source_file": "eval/cases/format_safety.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "turn_1",
+          "case_id": "format_no_markdown",
+          "status": "PASS",
+          "latency_ms": 3515.162833966315,
+          "response_text": "治理今州，我注重三件事。\n一是倾听民愿，小事也关乎根基。\n二是依法行事，公正才能长久。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": null,
+            "retrieval_hit": true,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": null,
+            "quest_success": null
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "answer",
+            "used_knowledge_ids": [
+              "jinhsi_jinzhou_governance",
+              "jinhsi_identity_role"
+            ],
+            "used_memory_ids": [
+              "seed_wuwa_jinhsi_default_relation"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "memory_preferred_address",
+      "suite": "memory",
+      "npc_id": "arknights_amiya",
+      "player_id": "memory_preferred_address_20260706213449",
+      "source_file": "eval/cases/memory.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "write_preferred_address",
+          "case_id": "memory_preferred_address",
+          "status": "PASS",
+          "latency_ms": 2002.000999636948,
+          "response_text": "好的，小林博士。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": null,
+            "retrieval_hit": null,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": null,
+            "quest_success": null,
+            "memory_candidate_types": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "remember_preference",
+            "used_knowledge_ids": [],
+            "used_memory_ids": [
+              "seed_arknights_amiya_default_relation"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": null
+          }
+        },
+        {
+          "id": "recall_preferred_address",
+          "case_id": "memory_preferred_address",
+          "status": "PASS",
+          "latency_ms": 1852.1460425108671,
+          "response_text": "当然记得，小林。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": null,
+            "retrieval_hit": null,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": true,
+            "quest_success": null,
+            "text_contains": true,
+            "used_memory_id_suffixes": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "remember_preference",
+            "used_knowledge_ids": [],
+            "used_memory_ids": [
+              "mem_arknights_amiya_memory_preferred_address_20260706213449_preferred_address"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "persona_amiya_mission",
+      "suite": "persona",
+      "npc_id": "arknights_amiya",
+      "player_id": "persona_amiya_mission_20260706213449",
+      "source_file": "eval/cases/persona.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "turn_1",
+          "case_id": "persona_amiya_mission",
+          "status": "PASS",
+          "latency_ms": 3120.7115836441517,
+          "response_text": "罗德岛以救助感染者为使命，\n同时致力于治疗源石病，\n减少歧视与冲突。博士，我们一起努力。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": true,
+            "boundary_ok": null,
+            "retrieval_hit": true,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": null,
+            "quest_success": null,
+            "text_not_contains": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "answer",
+            "used_knowledge_ids": [
+              "amiya_rhodes_mission",
+              "amiya_identity_role",
+              "amiya_leadership_burden"
+            ],
+            "used_memory_ids": [
+              "seed_arknights_amiya_default_relation"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "persona_yae_publishing",
+      "suite": "persona",
+      "npc_id": "genshin_yae_miko",
+      "player_id": "persona_yae_publishing_20260706213449",
+      "source_file": "eval/cases/persona.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "turn_1",
+          "case_id": "persona_yae_publishing",
+          "status": "PASS",
+          "latency_ms": 2550.7124168798327,
+          "response_text": "哦？想投稿轻小说？\n说说看，是个怎样的故事？",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": true,
+            "boundary_ok": null,
+            "retrieval_hit": true,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": null,
+            "quest_success": null,
+            "text_not_contains": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "answer",
+            "used_knowledge_ids": [
+              "yae_publishing_house",
+              "yae_identity_role"
+            ],
+            "used_memory_ids": [
+              "seed_genshin_yae_miko_default_relation"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "persona_jinhsi_wish",
+      "suite": "persona",
+      "npc_id": "wuwa_jinhsi",
+      "player_id": "persona_jinhsi_wish_20260706213449",
+      "source_file": "eval/cases/persona.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "turn_1",
+          "case_id": "persona_jinhsi_wish",
+          "status": "PASS",
+          "latency_ms": 2340.2470825240016,
+          "response_text": "愿望若被认真听见，就会成为道路。\n我不能保证奇迹，但会尽力回应。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": true,
+            "boundary_ok": null,
+            "retrieval_hit": true,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": null,
+            "quest_success": null,
+            "text_not_contains": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "answer",
+            "used_knowledge_ids": [
+              "jinhsi_wish_custom",
+              "jinhsi_identity_role"
+            ],
+            "used_memory_ids": [
+              "seed_wuwa_jinhsi_default_relation"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "quest_accept_then_complete",
+      "suite": "quest_flow",
+      "npc_id": "arknights_amiya",
+      "player_id": "quest_accept_then_complete_20260706213449",
+      "source_file": "eval/cases/quest_flow.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "accept_request",
+          "case_id": "quest_accept_then_complete",
+          "status": "PASS",
+          "latency_ms": 2931.056832894683,
+          "response_text": "博士，谢谢你愿意伸出援手。\n前线有一批感染者需要紧急物资支援。\n请跟我来，我们边走边说明情况。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": null,
+            "retrieval_hit": null,
+            "tool_call_accuracy": true,
+            "world_event_accuracy": true,
+            "memory_recall": null,
+            "quest_success": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "start_quest",
+            "used_knowledge_ids": [],
+            "used_memory_ids": [
+              "seed_arknights_amiya_default_relation"
+            ],
+            "tool_calls": [
+              "start_quest"
+            ],
+            "world_events": [
+              "quest_started"
+            ],
+            "reflection": null
+          }
+        },
+        {
+          "id": "complete_request",
+          "case_id": "quest_accept_then_complete",
+          "status": "PASS",
+          "latency_ms": 2627.244208008051,
+          "response_text": "太好了，博士，你找到了。\n这样我们就能继续前进了。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": null,
+            "retrieval_hit": null,
+            "tool_call_accuracy": true,
+            "world_event_accuracy": true,
+            "memory_recall": null,
+            "quest_success": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "complete_quest",
+            "used_knowledge_ids": [],
+            "used_memory_ids": [
+              "seed_arknights_amiya_default_relation"
+            ],
+            "tool_calls": [
+              "advance_quest",
+              "update_relationship"
+            ],
+            "world_events": [
+              "quest_advanced",
+              "relationship_changed"
+            ],
+            "reflection": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "boundary_amiya_cross_world",
+      "suite": "rag_boundary",
+      "npc_id": "arknights_amiya",
+      "player_id": "boundary_amiya_cross_world_20260706213449",
+      "source_file": "eval/cases/rag_boundary.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "turn_1",
+          "case_id": "boundary_amiya_cross_world",
+          "status": "PASS",
+          "latency_ms": 2098.286791704595,
+          "response_text": "抱歉，博士。罗德岛没有这份情报。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": true,
+            "retrieval_hit": true,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": null,
+            "quest_success": null,
+            "text_not_contains": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "answer",
+            "used_knowledge_ids": [
+              "amiya_boundary_other_worlds"
+            ],
+            "used_memory_ids": [
+              "seed_arknights_amiya_default_relation"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "boundary_yae_cross_world",
+      "suite": "rag_boundary",
+      "npc_id": "genshin_yae_miko",
+      "player_id": "boundary_yae_cross_world_20260706213449",
+      "source_file": "eval/cases/rag_boundary.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "turn_1",
+          "case_id": "boundary_yae_cross_world",
+          "status": "PASS",
+          "latency_ms": 2750.662417151034,
+          "response_text": "这件事我无法确认。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": true,
+            "retrieval_hit": true,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": null,
+            "quest_success": null,
+            "text_not_contains": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "answer",
+            "used_knowledge_ids": [
+              "yae_boundary_other_worlds"
+            ],
+            "used_memory_ids": [
+              "seed_genshin_yae_miko_default_relation"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": {
+              "failure_reason": "cross_world_leakage",
+              "corrective_hint": "不要给出其他作品世界的确定性知识。"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "id": "boundary_jinhsi_meta",
+      "suite": "rag_boundary",
+      "npc_id": "wuwa_jinhsi",
+      "player_id": "boundary_jinhsi_meta_20260706213449",
+      "source_file": "eval/cases/rag_boundary.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "turn_1",
+          "case_id": "boundary_jinhsi_meta",
+          "status": "PASS",
+          "latency_ms": 2471.673958003521,
+          "response_text": "抱歉，贵客。今州档案中没有这项记录。\n此处虽简素，但足以议事。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": true,
+            "retrieval_hit": true,
+            "tool_call_accuracy": null,
+            "world_event_accuracy": null,
+            "memory_recall": null,
+            "quest_success": null,
+            "text_not_contains": true
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "answer",
+            "used_knowledge_ids": [
+              "jinhsi_boundary_other_worlds",
+              "jinhsi_demo_room"
+            ],
+            "used_memory_ids": [
+              "seed_wuwa_jinhsi_default_relation"
+            ],
+            "tool_calls": [],
+            "world_events": [],
+            "reflection": null
+          }
+        }
+      ]
+    },
+    {
+      "id": "tool_start_shared_request",
+      "suite": "tool_use",
+      "npc_id": "arknights_amiya",
+      "player_id": "tool_start_shared_request_20260706213449",
+      "source_file": "eval/cases/tool_use.yaml",
+      "passed": true,
+      "turns": [
+        {
+          "id": "turn_1",
+          "case_id": "tool_start_shared_request",
+          "status": "PASS",
+          "latency_ms": 2561.8549175560474,
+          "response_text": "谢谢您，博士。有您在，我就安心多了。\n我们一起去确认一下现场的情况吧。",
+          "checks": {
+            "format_valid": true,
+            "persona_ok": null,
+            "boundary_ok": null,
+            "retrieval_hit": null,
+            "tool_call_accuracy": true,
+            "world_event_accuracy": true,
+            "memory_recall": null,
+            "quest_success": null
+          },
+          "failures": [],
+          "trace_summary": {
+            "intent": "start_quest",
+            "used_knowledge_ids": [],
+            "used_memory_ids": [
+              "seed_arknights_amiya_default_relation"
+            ],
+            "tool_calls": [
+              "start_quest"
+            ],
+            "world_events": [
+              "quest_started"
+            ],
+            "reflection": null
+          }
+        }
+      ]
+    }
+  ]
+}

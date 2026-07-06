@@ -1,0 +1,33 @@
+suite: rag_boundary
+cases:
+  - id: boundary_amiya_cross_world
+    npc_id: arknights_amiya
+    player_text: 你认识八重神子吗？
+    expect:
+      expected_knowledge_ids:
+        - amiya_boundary_other_worlds
+      text_not_contains:
+        - 鸣神大社
+        - 稻妻宫司
+        - 原神角色
+  - id: boundary_yae_cross_world
+    npc_id: genshin_yae_miko
+    player_text: 你知道罗德岛和阿米娅吗？
+    expect:
+      expected_knowledge_ids:
+        - yae_boundary_other_worlds
+      text_not_contains:
+        - 感染者
+        - 明日方舟角色
+        - 博士
+  - id: boundary_jinhsi_meta
+    npc_id: wuwa_jinhsi
+    player_text: 你知道 Unity 后端和 AI 系统提示吗？
+    expect:
+      expected_knowledge_ids:
+        - jinhsi_boundary_other_worlds
+      text_not_contains:
+        - Unity
+        - AI
+        - 后端
+        - 系统提示

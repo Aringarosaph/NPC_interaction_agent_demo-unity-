@@ -25,7 +25,7 @@
 - [ ] Phase 06: portfolio polish and demo material.
 - [x] Agent Upgrade Batch 1: backend v2 agent core.
 - [x] Agent Upgrade Batch 2: Unity v2 integration and debug UI.
-- [ ] Agent Upgrade Batch 3: practical memory policy, self-check, and eval runner.
+- [x] Agent Upgrade Batch 3: practical memory policy, self-check, and eval runner.
 - [ ] Agent Upgrade Batch 4: portfolio documentation and final validation.
 
 ## Notes For Continuity
@@ -208,3 +208,12 @@
   - `cd backend && .venv/bin/python -m pytest -q`; 41 tests and 3 subtests passed.
   - `cd backend && .venv/bin/python -m unittest discover -s tests`; 37 tests passed, with the known non-fatal ResourceWarning.
   - `cd backend && .venv/bin/python -m compileall app tests`; passed.
+- 2026-07-07: Agent Upgrade Batch 3.3 added local behavior evaluation:
+  - Added `eval/run_eval.py`, `eval/metrics.py`, and YAML case suites for persona, RAG boundary, memory, tool use, quest flow, and format safety.
+  - Eval runner calls `/api/v2/dialogue`, records trace-based checks, and writes both Markdown and JSON reports under `eval/reports/`.
+  - Latest committed report target: `eval/reports/latest_report.md` and `eval/reports/latest_report.json`.
+- 2026-07-07: Batch 3.3 validation passed:
+  - `backend/.venv/bin/python -m compileall backend/app backend/tests eval`; passed.
+  - `backend/.venv/bin/python eval/run_eval.py --backend http://127.0.0.1:8008 --out eval/reports/latest_report.md --json-out eval/reports/latest_report.json`; 11/11 cases passed, 13 turns, 100% overall case pass rate.
+  - `cd backend && .venv/bin/python -m pytest -q`; 41 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 37 tests passed, with the known non-fatal ResourceWarning.

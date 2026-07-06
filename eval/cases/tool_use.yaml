@@ -1,0 +1,10 @@
+suite: tool_use
+cases:
+  - id: tool_start_shared_request
+    npc_id: arknights_amiya
+    player_text: 我愿意帮你，交给我吧。
+    expect:
+      expected_tool_calls:
+        - start_quest
+      expected_world_events:
+        - quest_started

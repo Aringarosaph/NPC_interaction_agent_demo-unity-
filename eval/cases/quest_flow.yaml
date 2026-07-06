@@ -1,0 +1,21 @@
+suite: quest_flow
+cases:
+  - id: quest_accept_then_complete
+    npc_id: arknights_amiya
+    turns:
+      - id: accept_request
+        player_text: 我愿意帮你。
+        expect:
+          expected_tool_calls:
+            - start_quest
+          expected_world_events:
+            - quest_started
+      - id: complete_request
+        player_text: 我找到了徽章，给你。
+        expect:
+          expected_tool_calls:
+            - advance_quest
+            - update_relationship
+          expected_world_events:
+            - quest_advanced
+            - relationship_changed

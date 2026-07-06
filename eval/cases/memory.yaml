@@ -1,0 +1,17 @@
+suite: memory
+cases:
+  - id: memory_preferred_address
+    npc_id: arknights_amiya
+    turns:
+      - id: write_preferred_address
+        player_text: 以后叫我小林
+        expect:
+          expected_memory_candidate_types:
+            - preference
+      - id: recall_preferred_address
+        player_text: 你记得怎么叫我吗？
+        expect:
+          text_contains:
+            - 小林
+          expected_used_memory_id_suffixes:
+            - preferred_address

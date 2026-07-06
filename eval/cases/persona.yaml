@@ -1,0 +1,35 @@
+suite: persona
+cases:
+  - id: persona_amiya_mission
+    npc_id: arknights_amiya
+    player_text: 罗德岛的使命是什么？
+    expect:
+      expected_knowledge_ids:
+        - amiya_rhodes_mission
+      text_not_contains:
+        - AI
+        - Unity
+        - 后端
+        - 系统提示
+  - id: persona_yae_publishing
+    npc_id: genshin_yae_miko
+    player_text: 我想投稿轻小说。
+    expect:
+      expected_knowledge_ids:
+        - yae_publishing_house
+      text_not_contains:
+        - AI
+        - Unity
+        - 后端
+        - 系统提示
+  - id: persona_jinhsi_wish
+    npc_id: wuwa_jinhsi
+    player_text: 今州会怎样回应人们的愿望？
+    expect:
+      expected_knowledge_ids:
+        - jinhsi_wish_custom
+      text_not_contains:
+        - AI
+        - Unity
+        - 后端
+        - 系统提示
