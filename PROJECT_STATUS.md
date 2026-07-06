@@ -217,3 +217,7 @@
   - `backend/.venv/bin/python eval/run_eval.py --backend http://127.0.0.1:8008 --out eval/reports/latest_report.md --json-out eval/reports/latest_report.json`; 11/11 cases passed, 13 turns, 100% overall case pass rate.
   - `cd backend && .venv/bin/python -m pytest -q`; 41 tests and 3 subtests passed.
   - `cd backend && .venv/bin/python -m unittest discover -s tests`; 37 tests passed, with the known non-fatal ResourceWarning.
+- 2026-07-07: Agent Upgrade Batch 4.1 refreshed portfolio documentation:
+  - Rewrote `README.md` as a Chinese interviewer-facing product guide with overview, architecture, quick start, v1/v2 API examples, validation commands, eval summary, capability mapping, limitations, and licensing notes.
+  - Added `docs/agent_portfolio_interview_guide.md` for fast interview review of project goals, run entry points, implementation hotspots, tradeoffs, latest validation, and future extensions.
+  - Confirmed README and the interview guide do not contain personal recording guidance.
