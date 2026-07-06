@@ -22,11 +22,11 @@
 - [x] Phase 03: DeepSeek JSON output integration.
 - [x] Phase 04: SQLite memory write/read flow.
 - [x] Phase 05: Unity whitebox scene and Play Mode backend dialogue smoke.
-- [ ] Phase 06: portfolio polish and demo material.
+- [x] Phase 06: portfolio polish and demo material.
 - [x] Agent Upgrade Batch 1: backend v2 agent core.
 - [x] Agent Upgrade Batch 2: Unity v2 integration and debug UI.
 - [x] Agent Upgrade Batch 3: practical memory policy, self-check, and eval runner.
-- [ ] Agent Upgrade Batch 4: portfolio documentation and final validation.
+- [x] Agent Upgrade Batch 4: portfolio documentation and final validation.
 
 ## Notes For Continuity
 
@@ -221,3 +221,10 @@
   - Rewrote `README.md` as a Chinese interviewer-facing product guide with overview, architecture, quick start, v1/v2 API examples, validation commands, eval summary, capability mapping, limitations, and licensing notes.
   - Added `docs/agent_portfolio_interview_guide.md` for fast interview review of project goals, run entry points, implementation hotspots, tradeoffs, latest validation, and future extensions.
   - Confirmed README and the interview guide do not contain personal recording guidance.
+- 2026-07-07: Agent Upgrade Batch 4.2 final local validation passed:
+  - `cd backend && .venv/bin/python -m pytest -q`; 41 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 37 tests passed, with the known non-fatal ResourceWarning.
+  - `backend/.venv/bin/python -m compileall backend/app backend/tests eval`; passed.
+  - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
+  - `backend/.venv/bin/python eval/run_eval.py --backend http://127.0.0.1:8008 --out eval/reports/latest_report.md --json-out eval/reports/latest_report.json`; 11/11 cases passed, 13 turns, 100% overall case pass rate.
+  - Unity Play Mode backend smoke hit `POST /api/v2/dialogue` and passed with `Unity backend Play Mode smoke passed.`
