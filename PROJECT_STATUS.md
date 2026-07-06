@@ -173,3 +173,12 @@
   - `cd backend && .venv/bin/python -m unittest discover -s tests`; 28 tests passed, with non-fatal ResourceWarning from process-level SQLite connections in the FastAPI app.
   - `cd backend && .venv/bin/python -m compileall app tests`; passed.
   - FastAPI TestClient smoke for `/api/v2/dialogue` returned `dialogue_response.v2`, `start_quest`, and `quest_started`.
+- 2026-07-07: Agent Upgrade Batch 2.1 upgraded Unity dialogue client for v2:
+  - Added Unity DTOs for `DialogueResponseV2`, agent trace, tool calls/results, and world events.
+  - `NpcDialogueClient` now defaults to `/api/v2/dialogue` and falls back to v1 if v2 fails.
+  - Play Mode smoke now accepts v2 responses.
+- 2026-07-07: Batch 2.1 validation passed:
+  - `cd backend && .venv/bin/python -m pytest -q`; 32 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 28 tests passed, with the known non-fatal ResourceWarning.
+  - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
+  - Unity Play Mode backend smoke hit `POST /api/v2/dialogue` and passed with `Unity backend Play Mode smoke passed.`
