@@ -1,18 +1,19 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dialogue_response.v1",
-  "title": "Dialogue Response",
+  "$id": "dialogue_response.agent",
+  "title": "Agent Dialogue Response",
   "type": "object",
   "required": [
     "schema_version",
     "turn_id",
     "npc_id",
     "utterances",
-    "internal"
+    "world_events",
+    "trace"
   ],
   "properties": {
     "schema_version": {
-      "const": "dialogue_response.v1"
+      "const": "dialogue_response.agent"
     },
     "turn_id": {
       "type": "string"
@@ -69,8 +70,19 @@
         }
       }
     },
-    "internal": {
+    "world_events": {
+      "type": "array"
+    },
+    "trace": {
       "type": "object",
+      "required": [
+        "used_knowledge_ids",
+        "used_memory_ids",
+        "tool_calls",
+        "tool_results",
+        "memory_candidates",
+        "confidence"
+      ],
       "properties": {
         "used_knowledge_ids": {
           "type": "array",
@@ -84,8 +96,20 @@
             "type": "string"
           }
         },
+        "plan": {
+          "type": ["object", "null"]
+        },
+        "tool_calls": {
+          "type": "array"
+        },
+        "tool_results": {
+          "type": "array"
+        },
         "memory_candidates": {
           "type": "array"
+        },
+        "reflection": {
+          "type": ["object", "null"]
         },
         "confidence": {
           "type": "number"

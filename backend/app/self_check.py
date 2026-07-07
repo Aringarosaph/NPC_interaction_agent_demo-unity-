@@ -4,7 +4,7 @@ import re
 from dataclasses import dataclass
 from typing import Any, Dict, Iterable, Sequence
 
-from .models import DialogueRequest, DialogueResponse, ToolResult, Utterance, WorldEvent
+from .models import DialogueRequest, NormalizedDialogueResponse, ToolResult, Utterance, WorldEvent
 
 
 META_TERMS = ["AI", "模型", "Unity", "后端", "系统提示", "提示词", "知识库", "检索结果", "source_id"]
@@ -43,7 +43,7 @@ class ResponseSelfChecker:
         self,
         profile: Dict[str, Any],
         request: DialogueRequest,
-        response: DialogueResponse,
+        response: NormalizedDialogueResponse,
         tool_results: Sequence[ToolResult],
         world_events: Sequence[WorldEvent],
         state_snapshot: Dict[str, Any],

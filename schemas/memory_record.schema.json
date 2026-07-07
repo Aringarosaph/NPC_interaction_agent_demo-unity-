@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "memory_record.v1",
+  "$id": "memory_record",
   "title": "Memory Record",
   "type": "object",
   "required": [
@@ -22,7 +22,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "memory_record.v1"
+      "const": "memory_record"
     },
     "memory_id": {
       "type": "string"

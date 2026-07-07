@@ -10,7 +10,7 @@
 
 ```text
 Unity input
--> backend v2 dialogue
+-> backend dialogue
 -> retrieve + memory + state
 -> planner
 -> validated tools
@@ -49,13 +49,13 @@ backend/.venv/bin/python eval/run_eval.py \
 
 | 看点 | 位置 |
 | --- | --- |
-| v2 Agent 编排 | `backend/app/orchestrator.py` |
+| Agent 编排 | `backend/app/orchestrator.py` |
 | Planner | `backend/app/agent_planner.py` |
 | 工具注册与校验 | `backend/app/tools/` |
 | 世界状态持久化 | `backend/app/state_store.py` |
 | 长期记忆与策略 | `backend/app/memory_store.py`, `backend/app/memory_policy.py` |
 | 自检与 reflection | `backend/app/self_check.py` |
-| Unity v2 client | `unity/PortfolioNpcRagWhitebox/Assets/Scripts/NpcDialogue/NpcDialogueClient.cs` |
+| Unity dialogue client | `unity/PortfolioNpcRagWhitebox/Assets/Scripts/NpcDialogue/NpcDialogueClient.cs` |
 | Unity debug panel | `unity/PortfolioNpcRagWhitebox/Assets/Scripts/NpcDialogue/AgentDebugPanelController.cs` |
 | 行为评测 | `eval/run_eval.py`, `eval/cases/`, `eval/reports/latest_report.md` |
 
@@ -65,7 +65,7 @@ backend/.venv/bin/python eval/run_eval.py \
 - 使用本地 YAML/SQLite，降低部署复杂度，同时保留真实项目里的 profile、memory、state、event 边界。
 - 使用确定性 planner 作为当前 demo 的默认路径，保证可测、可复现；未来可以替换为受限 JSON planner。
 - 工具调用必须经过后端注册表和参数校验，避免模型自由改写任务/物品/关系状态。
-- v1 接口保留，v2 接口新增 trace/world events，方便渐进升级和兼容旧 Unity 客户端。
+- 公开接口统一为 `/api/dialogue`，响应中直接包含 trace/world events，Unity 客户端只维护一条请求路径。
 
 ## 最新验证
 
@@ -74,8 +74,8 @@ backend/.venv/bin/python eval/run_eval.py \
 - 后端 pytest：41 tests + 3 subtests passed。
 - 后端 unittest：37 tests passed。
 - Eval：11/11 cases passed，覆盖 persona、boundary、retrieval、tool use、world event、memory、format、quest flow。
-- Unity validator：场景、v2 endpoint、NPC markers、中文字体、debug panel 引用校验通过。
-- Unity Play Mode smoke：能连接本地 `/api/v2/dialogue` 完成实机对话请求。
+- Unity validator：场景、统一 endpoint、NPC markers、中文字体、debug panel 引用校验通过。
+- Unity Play Mode smoke：能连接本地 `/api/dialogue` 完成实机对话请求。
 
 ## 可讨论的后续扩展
 

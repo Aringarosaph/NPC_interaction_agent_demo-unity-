@@ -26,13 +26,13 @@ class MemoryStoreTest(unittest.IsolatedAsyncioTestCase):
 
     async def test_preferred_name_memory_is_written_and_recalled_for_same_npc(self) -> None:
         write_response = await self.orchestrator.handle(
-            self._request("arknights_amiya", "以后叫我小林")
+            self._request("arknights_amiya", "以后叫我小吴")
         )
-        candidates = write_response.internal.memory_candidates
+        candidates = write_response.trace.memory_candidates
 
         self.assertEqual(len(candidates), 1)
         self.assertEqual(candidates[0]["memory_type"], "preference")
-        self.assertIn("小林", candidates[0]["summary"])
+        self.assertIn("小吴", candidates[0]["summary"])
 
         memories = self.orchestrator.debug_memories(
             npc_id="arknights_amiya",
@@ -40,16 +40,16 @@ class MemoryStoreTest(unittest.IsolatedAsyncioTestCase):
             include_default=False,
         )
         self.assertEqual(len(memories.memories), 1)
-        self.assertIn("小林", memories.memories[0].summary)
+        self.assertIn("小吴", memories.memories[0].summary)
 
         recall_response = await self.orchestrator.handle(
             self._request("arknights_amiya", "你记得怎么叫我吗？")
         )
 
         texts = "".join(utterance.text for utterance in recall_response.utterances)
-        self.assertIn("小林", texts)
-        self.assertIn(memories.memories[0].memory_id, recall_response.internal.used_memory_ids)
-        self.assertEqual(recall_response.internal.memory_candidates, [])
+        self.assertIn("小吴", texts)
+        self.assertIn(memories.memories[0].memory_id, recall_response.trace.used_memory_ids)
+        self.assertEqual(recall_response.trace.memory_candidates, [])
 
         after_recall_memories = self.orchestrator.debug_memories(
             npc_id="arknights_amiya",
@@ -57,11 +57,11 @@ class MemoryStoreTest(unittest.IsolatedAsyncioTestCase):
             include_default=False,
         )
         self.assertEqual(len(after_recall_memories.memories), 1)
-        self.assertIn("小林", after_recall_memories.memories[0].summary)
+        self.assertIn("小吴", after_recall_memories.memories[0].summary)
 
     async def test_memory_is_not_shared_with_other_npcs(self) -> None:
         await self.orchestrator.handle(
-            self._request("arknights_amiya", "以后叫我小林")
+            self._request("arknights_amiya", "以后叫我小吴")
         )
 
         yae_memories = self.orchestrator.debug_memories(
@@ -75,7 +75,7 @@ class MemoryStoreTest(unittest.IsolatedAsyncioTestCase):
     @staticmethod
     def _request(npc_id: str, player_text: str) -> DialogueRequest:
         return DialogueRequest(
-            schema_version="dialogue_request.v1",
+            schema_version="dialogue_request.agent",
             session_id="memory_test",
             player_id="local_player",
             npc_id=npc_id,

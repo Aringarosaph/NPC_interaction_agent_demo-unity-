@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "knowledge_chunk.v1",
+  "$id": "knowledge_chunk",
   "title": "Knowledge Chunk",
   "type": "object",
   "required": [
@@ -21,7 +21,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "knowledge_chunk.v1"
+      "const": "knowledge_chunk"
     },
     "chunk_id": {
       "type": "string"

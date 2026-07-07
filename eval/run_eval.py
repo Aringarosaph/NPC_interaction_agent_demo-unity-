@@ -48,7 +48,7 @@ def main() -> int:
     json_out_path = Path(args.json_out) if args.json_out else out_path.with_suffix(".json")
 
     try:
-        health = get_json(f"{backend}/api/v1/health", timeout=args.timeout)
+        health = get_json(f"{backend}/api/health", timeout=args.timeout)
     except Exception as exc:
         print(f"Backend health check failed: {exc}", file=sys.stderr)
         return 2
@@ -63,7 +63,7 @@ def main() -> int:
         for case in case_specs
     ]
     report = {
-        "schema_version": "npc_agent_eval_report.v1",
+        "schema_version": "npc_agent_eval_report",
         "backend": backend,
         "generated_at": datetime.now(timezone.utc).isoformat(),
         "metrics": summarize_results(case_results),
@@ -166,7 +166,7 @@ def post_dialogue(
     timeout: float,
 ) -> Dict[str, Any]:
     body = {
-        "schema_version": "dialogue_request.v1",
+        "schema_version": "dialogue_request.agent",
         "session_id": session_id,
         "player_id": player_id,
         "npc_id": npc_id,
@@ -175,7 +175,7 @@ def post_dialogue(
         "is_in_range": True,
         "world_state": dict(DEFAULT_WORLD_STATE),
     }
-    return post_json(f"{backend}/api/v2/dialogue", body, timeout=timeout)
+    return post_json(f"{backend}/api/dialogue", body, timeout=timeout)
 
 
 def evaluate_turn(

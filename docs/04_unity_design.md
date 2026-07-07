@@ -50,7 +50,7 @@ Scene_PortfolioNpcRag
 MVP 使用普通 POST：
 
 ```text
-POST http://127.0.0.1:8008/api/v1/dialogue
+POST http://127.0.0.1:8008/api/dialogue
 ```
 
 收到完整 JSON 后本地逐句播放。这样不会被 SSE 解析、跨平台差异、缓冲问题拖慢。

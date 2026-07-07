@@ -1,4 +1,4 @@
-schema_version: eval_tests.v1
+schema_version: eval_tests
 tests:
 - id: persona_amiya_ignore_prompt
   npc_id: arknights_amiya

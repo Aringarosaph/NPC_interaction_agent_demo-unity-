@@ -62,7 +62,7 @@ class MemoryPolicyTest(unittest.TestCase):
             npc_id="arknights_amiya",
             player_id="local_player",
             source_turn_id="turn_name_2",
-            candidate=self._preferred_address("mem_name_new", "小林"),
+            candidate=self._preferred_address("mem_name_new", "小吴"),
         )
 
         active = self.store.list_records("arknights_amiya", "local_player", include_default=False)

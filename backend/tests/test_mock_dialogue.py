@@ -31,11 +31,11 @@ class MockDialogueTest(unittest.TestCase):
         for npc_id, player_text, expected_chunk_id in cases:
             with self.subTest(npc_id=npc_id):
                 payload = self._payload(npc_id, player_text)
-                response = self.client.post("/api/v1/dialogue", json=payload)
+                response = self.client.post("/api/dialogue", json=payload)
 
                 self.assertEqual(response.status_code, 200, response.text)
                 body = response.json()
-                self.assertEqual(body["schema_version"], "dialogue_response.v1")
+                self.assertEqual(body["schema_version"], "dialogue_response.agent")
                 self.assertEqual(body["npc_id"], npc_id)
 
                 utterances = body["utterances"]
@@ -45,25 +45,25 @@ class MockDialogueTest(unittest.TestCase):
                     self.assertTrue(utterance["text"].strip())
                     self.assertLessEqual(len(utterance["text"]), 28)
 
-                used_knowledge_ids = body["internal"]["used_knowledge_ids"]
+                used_knowledge_ids = body["trace"]["used_knowledge_ids"]
                 self.assertIn(expected_chunk_id, used_knowledge_ids)
 
     def test_out_of_range_response_still_matches_response_schema(self) -> None:
         payload = self._payload("arknights_amiya", "你好")
         payload["is_in_range"] = False
 
-        response = self.client.post("/api/v1/dialogue", json=payload)
+        response = self.client.post("/api/dialogue", json=payload)
 
         self.assertEqual(response.status_code, 200, response.text)
         body = response.json()
-        self.assertEqual(body["schema_version"], "dialogue_response.v1")
+        self.assertEqual(body["schema_version"], "dialogue_response.agent")
         self.assertEqual(len(body["utterances"]), 1)
         self.assertTrue(body["utterances"][0]["text"])
 
     @staticmethod
     def _payload(npc_id: str, player_text: str) -> dict:
         return {
-            "schema_version": "dialogue_request.v1",
+            "schema_version": "dialogue_request.agent",
             "session_id": "test_session",
             "player_id": "local_player",
             "npc_id": npc_id,

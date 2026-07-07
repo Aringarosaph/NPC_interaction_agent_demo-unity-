@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "dialogue_request.v1",
+  "$id": "dialogue_request.agent",
   "title": "Dialogue Request",
   "type": "object",
   "required": [
@@ -14,7 +14,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "dialogue_request.v1"
+      "const": "dialogue_request.agent"
     },
     "session_id": {
       "type": "string"

@@ -5,10 +5,10 @@ from fastapi import FastAPI, HTTPException, Query
 from fastapi.middleware.cors import CORSMiddleware
 
 from .config import SERVER_HOST, SERVER_PORT
-from .models import DialogueRequest, DialogueResponse, DialogueResponseV2, DebugRetrieveResponse, DebugMemoriesResponse
+from .models import AgentDialogueResponse, DialogueRequest, DebugRetrieveResponse, DebugMemoriesResponse
 from .orchestrator import DialogueOrchestrator
 
-app = FastAPI(title="Portfolio NPC RAG Agent", version="0.1.0")
+app = FastAPI(title="Portfolio NPC RAG Agent", version="1.0.0")
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -20,13 +20,13 @@ app.add_middleware(
 orchestrator = DialogueOrchestrator()
 
 
-@app.get("/api/v1/health")
+@app.get("/api/health")
 def health() -> dict:
     return {"ok": True, "service": "portfolio-npc-rag-agent"}
 
 
-@app.post("/api/v1/dialogue", response_model=DialogueResponse)
-async def dialogue(req: DialogueRequest) -> DialogueResponse:
+@app.post("/api/dialogue", response_model=AgentDialogueResponse)
+async def dialogue(req: DialogueRequest) -> AgentDialogueResponse:
     try:
         return await orchestrator.handle(req)
     except KeyError as e:
@@ -35,17 +35,7 @@ async def dialogue(req: DialogueRequest) -> DialogueResponse:
         raise HTTPException(status_code=500, detail=f"dialogue_failed: {e}")
 
 
-@app.post("/api/v2/dialogue", response_model=DialogueResponseV2)
-async def dialogue_v2(req: DialogueRequest) -> DialogueResponseV2:
-    try:
-        return await orchestrator.handle_v2(req)
-    except KeyError as e:
-        raise HTTPException(status_code=404, detail=str(e))
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=f"dialogue_v2_failed: {e}")
-
-
-@app.get("/api/v1/debug/retrieve", response_model=DebugRetrieveResponse)
+@app.get("/api/debug/retrieve", response_model=DebugRetrieveResponse)
 def debug_retrieve(
     npc_id: str = Query(..., min_length=1),
     q: str = Query(..., min_length=1),
@@ -65,7 +55,7 @@ def debug_retrieve(
         raise HTTPException(status_code=500, detail=f"debug_retrieve_failed: {e}")
 
 
-@app.get("/api/v1/debug/memories", response_model=DebugMemoriesResponse)
+@app.get("/api/debug/memories", response_model=DebugMemoriesResponse)
 def debug_memories(
     npc_id: str = Query(..., min_length=1),
     player_id: str = Query("local_player", min_length=1),

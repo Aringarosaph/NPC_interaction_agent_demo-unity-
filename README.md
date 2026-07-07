@@ -7,11 +7,11 @@
 ## 核心亮点
 
 - **Unity 实机链路**：第三人称鼠标视角、WASD 移动、NPC 距离检测、中文名字牌、玩家/NPC 气泡、输入框和 agent debug 面板。
-- **后端 v2 Agent Loop**：`retrieve -> memory -> state snapshot -> planner -> validated tools -> response -> self-check -> trace`。
+- **后端 Agent Loop**：`retrieve -> memory -> state snapshot -> planner -> validated tools -> response -> self-check -> trace`。
 - **可验证 RAG**：每个 NPC 独立 profile、knowledge chunks、dialogue examples、memory seed，trace 会返回 `used_knowledge_ids`。
 - **长期记忆策略**：SQLite 本地记忆支持偏好写入/召回，称呼偏好会 supersede 旧记录，敏感实现信息不会落库。
 - **受控工具调用**：LLM 不直接改状态，后端只执行注册过且参数校验通过的工具，例如开启任务、推进任务、修改关系、发放物品、记录世界事件。
-- **轻量自检**：拦截列表格式、AI/Unity/后端泄漏、跨作品确定性知识、工具失败却说成功、任务状态矛盾等风险，并在 v2 trace 中记录 reflection。
+- **轻量自检**：拦截列表格式、AI/Unity/后端泄漏、跨作品确定性知识、工具失败却说成功、任务状态矛盾等风险，并在 trace 中记录 reflection。
 - **系统化评测**：`eval/` 覆盖 persona、RAG boundary、memory、tool use、quest flow、format safety，最新报告 11/11 cases passed。
 
 ## 架构概览
@@ -19,7 +19,7 @@
 ```mermaid
 flowchart LR
     A["Unity Player Input"] --> B["NpcDialogueClient"]
-    B --> C["FastAPI /api/v2/dialogue"]
+    B --> C["FastAPI /api/dialogue"]
     C --> D["NPC Profile + RAG"]
     C --> E["SQLite Memory"]
     C --> F["SQLite World State"]
@@ -30,7 +30,7 @@ flowchart LR
     H --> I["World Events"]
     G --> J["LLM / Mock JSON"]
     J --> K["Normalizer + Self Check"]
-    K --> L["DialogueResponseV2 + Trace"]
+    K --> L["Agent Dialogue Response + Trace"]
     L --> M["Unity Bubbles + Debug Panel"]
 ```
 
@@ -65,7 +65,7 @@ python -m uvicorn app.main:app --host 127.0.0.1 --port 8008
 健康检查：
 
 ```bash
-curl http://127.0.0.1:8008/api/v1/health
+curl http://127.0.0.1:8008/api/health
 ```
 
 关闭后端：在运行 uvicorn 的终端按 `Ctrl+C`。
@@ -96,19 +96,19 @@ Play Mode 操作：
 
 ## API 示例
 
-### v2 Agent 对话
+### Agent 对话
 
 ```bash
-curl -X POST http://127.0.0.1:8008/api/v2/dialogue \
+curl -X POST http://127.0.0.1:8008/api/dialogue \
   -H "Content-Type: application/json" \
-  -d '{"schema_version":"dialogue_request.v1","session_id":"demo","player_id":"local_player","npc_id":"arknights_amiya","player_text":"我愿意帮你，交给我吧。","distance_m":1.5,"is_in_range":true,"world_state":{"location_id":"portfolio_whitebox_room","game_time_label":"demo","quest_stage":0,"relationship_score":0,"debug_enabled":true}}'
+  -d '{"schema_version":"dialogue_request.agent","session_id":"demo","player_id":"local_player","npc_id":"arknights_amiya","player_text":"我愿意帮你，交给我吧。","distance_m":1.5,"is_in_range":true,"world_state":{"location_id":"portfolio_whitebox_room","game_time_label":"demo","quest_stage":0,"relationship_score":0,"debug_enabled":true}}'
 ```
 
 返回结构包含可直接给 Unity 使用的台词、世界事件和 trace：
 
 ```json
 {
-  "schema_version": "dialogue_response.v2",
+  "schema_version": "dialogue_response.agent",
   "turn_id": "turn_xxx",
   "npc_id": "arknights_amiya",
   "utterances": [
@@ -165,16 +165,6 @@ curl -X POST http://127.0.0.1:8008/api/v2/dialogue \
 }
 ```
 
-### v1 兼容接口
-
-旧接口仍保留：
-
-```bash
-curl -X POST http://127.0.0.1:8008/api/v1/dialogue \
-  -H "Content-Type: application/json" \
-  -d '{"schema_version":"dialogue_request.v1","session_id":"demo","player_id":"local_player","npc_id":"arknights_amiya","player_text":"罗德岛的使命是什么？","distance_m":1.5,"is_in_range":true,"world_state":{"location_id":"portfolio_whitebox_room","game_time_label":"demo","quest_stage":0,"relationship_score":0,"debug_enabled":true}}'
-```
-
 ## 可试输入
 
 ```text
@@ -182,7 +172,7 @@ curl -X POST http://127.0.0.1:8008/api/v1/dialogue \
 你认识八重神子吗？
 我想投稿轻小说。
 今州会怎样回应人们的愿望？
-以后叫我小林
+以后叫我小吴
 你记得怎么叫我吗？
 我愿意帮你，交给我吧。
 我找到了徽章，给你。
@@ -255,14 +245,14 @@ Unity Play Mode 后端联调 smoke，需先启动后端：
 | Agent 架构 | Planner、工具注册表、世界状态、事件回传、self-check reflection |
 | 后端工程 | FastAPI、Pydantic schema、SQLite memory/state、可测试的服务边界 |
 | 质量保障 | Pytest/unittest、Unity validator、Play Mode smoke、eval report |
-| 安全与可控性 | Unity 不直连 LLM，工具参数校验，敏感记忆过滤，v1 兼容保留 |
+| 安全与可控性 | Unity 不直连 LLM，工具参数校验，敏感记忆过滤，后端统一状态变更入口 |
 
 ## 目录结构
 
 - `backend/`：FastAPI 服务、RAG 编排、LLM client、记忆、状态、工具和测试。
 - `unity/PortfolioNpcRagWhitebox/`：Unity `6000.4.2f1` 项目和当前 demo 场景。
 - `data/npcs/`：三名 NPC 的 profile、knowledge、examples、memory seed。
-- `schemas/`：对话请求、v1/v2 响应、trace 等数据契约示例。
+- `schemas/`：对话请求、Agent 响应、trace 等数据契约示例。
 - `eval/`：行为评测 runner、case YAML 和最新报告。
 - `docs/`：架构、后端、Unity、prompt、评测、版权和执行计划文档。
 

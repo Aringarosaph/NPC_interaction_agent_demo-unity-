@@ -16,12 +16,10 @@ from .agent_planner import AgentPlanner
 from .self_check import ResponseSelfChecker
 from .models import (
     AgentTrace,
+    AgentDialogueResponse,
     DebugMemoriesResponse,
     DebugRetrieveResponse,
     DialogueRequest,
-    DialogueResponse,
-    DialogueResponseV2,
-    InternalDebug,
     ToolResult,
     Utterance,
     WorldEvent,
@@ -59,60 +57,11 @@ class DialogueOrchestrator:
         self.llm = llm or LlmClient()
         self.normalizer = ResponseNormalizer()
 
-    async def handle(self, req: DialogueRequest) -> DialogueResponse:
-        bundle = self.loader.get_bundle(req.npc_id)
-        if not req.is_in_range:
-            return DialogueResponse(
-                turn_id=f"turn_{uuid.uuid4().hex[:12]}",
-                npc_id=req.npc_id,
-                utterances=[
-                    Utterance(text="请再靠近一些。", emotion="neutral", action="idle", delay_ms=300)
-                ],
-                internal=InternalDebug(confidence=1.0),
-            )
-        profile = bundle.profile
-        turn_id = f"turn_{uuid.uuid4().hex[:12]}"
-        chunks = self.retriever.retrieve(
-            npc_id=req.npc_id,
-            query=req.player_text,
-            quest_stage=req.world_state.quest_stage,
-            max_spoiler_level=profile.get("knowledge_policy", {}).get("max_spoiler_level_default", 1),
-        )
-        memories = self.memory_store.search(req.npc_id, req.player_id, req.player_text, limit=CONFIG.get("retrieval", {}).get("memory_top_k", 3))
-        messages = self.prompt_builder.build(profile, req, chunks, memories)
-        raw = await self.llm.generate_json(
-            messages,
-            temperature=profile.get("generation_policy", {}).get("llm_temperature", 0.5),
-            max_tokens=profile.get("generation_policy", {}).get("max_tokens", 360),
-            fallback_name=profile.get("display_name_zh", "NPC"),
-        )
-        deterministic_memory_candidates = self._extract_memory_candidates(req, turn_id)
-        if deterministic_memory_candidates:
-            raw["memory_candidates"] = deterministic_memory_candidates
-        raw["used_knowledge_ids"] = self._trusted_ids(
-            raw.get("used_knowledge_ids", []),
-            [c.chunk_id for c in chunks],
-        )
-        raw["used_memory_ids"] = self._trusted_ids(
-            raw.get("used_memory_ids", []),
-            [m.memory_id for m in memories],
-        )
-        response = self.normalizer.normalize(
-            raw,
-            npc_id=req.npc_id,
-            turn_id=turn_id,
-            sentence_max_chars=profile.get("speech", {}).get("sentence_max_chars", 28),
-            max_utterances=profile.get("generation_policy", {}).get("max_response_utterances", 3),
-        )
-        for candidate in response.internal.memory_candidates:
-            self.memory_store.write_candidate(req.npc_id, req.player_id, candidate, source_turn_id=turn_id)
-        return response
-
-    async def handle_v2(self, req: DialogueRequest) -> DialogueResponseV2:
+    async def handle(self, req: DialogueRequest) -> AgentDialogueResponse:
         bundle = self.loader.get_bundle(req.npc_id)
         turn_id = f"turn_{uuid.uuid4().hex[:12]}"
         if not req.is_in_range:
-            return DialogueResponseV2(
+            return AgentDialogueResponse(
                 turn_id=turn_id,
                 npc_id=req.npc_id,
                 utterances=[
@@ -167,7 +116,7 @@ class DialogueOrchestrator:
             if event is not None:
                 world_events.append(event)
 
-        messages = self._build_v2_messages(
+        messages = self._build_agent_messages(
             profile=profile,
             req=req,
             chunks=chunks,
@@ -193,7 +142,7 @@ class DialogueOrchestrator:
             raw.get("used_memory_ids", []),
             [m.memory_id for m in memories],
         )
-        response_v1 = self.normalizer.normalize(
+        normalized_response = self.normalizer.normalize(
             raw,
             npc_id=req.npc_id,
             turn_id=turn_id,
@@ -203,33 +152,33 @@ class DialogueOrchestrator:
         self_check = self.self_checker.check(
             profile=profile,
             request=req,
-            response=response_v1,
+            response=normalized_response,
             tool_results=tool_results,
             world_events=world_events,
             state_snapshot=state_snapshot,
         )
         reflection = self.self_checker.reflection(self_check)
         if not self_check.passed:
-            response_v1.utterances = [self.self_checker.fallback_utterance(profile, self_check)]
-            response_v1.internal.confidence = min(response_v1.internal.confidence, 0.35)
+            normalized_response.utterances = [self.self_checker.fallback_utterance(profile, self_check)]
+            normalized_response.internal.confidence = min(normalized_response.internal.confidence, 0.35)
 
-        for candidate in response_v1.internal.memory_candidates:
+        for candidate in normalized_response.internal.memory_candidates:
             self.memory_store.write_candidate(req.npc_id, req.player_id, candidate, source_turn_id=turn_id)
 
-        return DialogueResponseV2(
+        return AgentDialogueResponse(
             turn_id=turn_id,
             npc_id=req.npc_id,
-            utterances=response_v1.utterances,
+            utterances=normalized_response.utterances,
             world_events=world_events,
             trace=AgentTrace(
-                used_knowledge_ids=response_v1.internal.used_knowledge_ids,
-                used_memory_ids=response_v1.internal.used_memory_ids,
+                used_knowledge_ids=normalized_response.internal.used_knowledge_ids,
+                used_memory_ids=normalized_response.internal.used_memory_ids,
                 plan=plan,
                 tool_calls=tool_calls,
                 tool_results=tool_results,
-                memory_candidates=response_v1.internal.memory_candidates,
+                memory_candidates=normalized_response.internal.memory_candidates,
                 reflection=reflection,
-                confidence=response_v1.internal.confidence,
+                confidence=normalized_response.internal.confidence,
             ),
         )
 
@@ -288,7 +237,7 @@ class DialogueOrchestrator:
         trusted = [item for item in model_ids if item in backend_ids]
         return trusted or backend_ids
 
-    def _build_v2_messages(
+    def _build_agent_messages(
         self,
         profile: Dict[str, object],
         req: DialogueRequest,

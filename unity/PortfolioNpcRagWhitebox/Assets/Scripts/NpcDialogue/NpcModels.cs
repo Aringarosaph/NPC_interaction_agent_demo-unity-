@@ -14,7 +14,7 @@ public class DialogueWorldState
 [Serializable]
 public class DialogueRequestDto
 {
-    public string schema_version = "dialogue_request.v1";
+    public string schema_version = "dialogue_request.agent";
     public string session_id;
     public string player_id = "local_player";
     public string npc_id;
@@ -31,7 +31,8 @@ public class DialogueResponseDto
     public string turn_id;
     public string npc_id;
     public List<UtteranceDto> utterances;
-    public InternalDebugDto @internal;
+    public List<WorldEventDto> world_events;
+    public AgentTraceDto trace;
 }
 
 [Serializable]
@@ -41,25 +42,6 @@ public class UtteranceDto
     public string emotion;
     public string action;
     public int delay_ms;
-}
-
-[Serializable]
-public class InternalDebugDto
-{
-    public List<string> used_knowledge_ids;
-    public List<string> used_memory_ids;
-    public float confidence;
-}
-
-[Serializable]
-public class DialogueResponseV2Dto
-{
-    public string schema_version;
-    public string turn_id;
-    public string npc_id;
-    public List<UtteranceDto> utterances;
-    public List<WorldEventDto> world_events;
-    public AgentTraceDto trace;
 }
 
 [Serializable]

@@ -63,7 +63,7 @@ Unity 发送：
 
 ```json
 {
-  "schema_version": "dialogue_request.v1",
+  "schema_version": "dialogue_request.agent",
   "session_id": "local_session_001",
   "player_id": "local_player",
   "npc_id": "arknights_amiya",
@@ -86,17 +86,29 @@ Unity 发送：
 
 ```json
 {
-  "schema_version": "dialogue_response.v1",
+  "schema_version": "dialogue_response.agent",
   "turn_id": "turn_xxx",
   "npc_id": "arknights_amiya",
   "utterances": [
     {"text": "抱歉，博士。", "emotion": "cautious", "action": "look_at_player", "delay_ms": 400},
     {"text": "罗德岛没有这份档案。", "emotion": "neutral", "action": "idle", "delay_ms": 650}
   ],
-  "internal": {
+  "world_events": [],
+  "trace": {
     "used_knowledge_ids": ["amiya_boundary_other_worlds"],
     "used_memory_ids": [],
+    "plan": {
+      "intent": "answer",
+      "goal": "Answer while staying inside the NPC knowledge boundary.",
+      "required_knowledge": ["amiya_boundary_other_worlds"],
+      "proposed_tools": [],
+      "risk_flags": [],
+      "public_reason": "玩家询问跨作品内容，按边界知识回应。"
+    },
+    "tool_calls": [],
+    "tool_results": [],
     "memory_candidates": [],
+    "reflection": null,
     "confidence": 0.82
   }
 }

@@ -1,4 +1,4 @@
-schema_version: eval_tests.v1
+schema_version: eval_tests
 tests:
 - id: scope_amiya_yae
   npc_id: arknights_amiya

@@ -22,7 +22,7 @@ public class AgentDebugPanelController : MonoBehaviour
         SetTrace("等待对话。");
     }
 
-    public void ApplyResponse(DialogueResponseV2Dto response)
+    public void ApplyResponse(DialogueResponseDto response)
     {
         if (response == null)
         {
@@ -39,11 +39,6 @@ public class AgentDebugPanelController : MonoBehaviour
 
         RefreshStaticTexts();
         SetTrace(BuildTraceText(response));
-    }
-
-    public void ApplyV1Fallback()
-    {
-        SetTrace("已回退到 v1 对话。");
     }
 
     private void ApplyWorldEvent(WorldEventDto worldEvent)
@@ -121,7 +116,7 @@ public class AgentDebugPanelController : MonoBehaviour
         return builder.ToString();
     }
 
-    private string BuildTraceText(DialogueResponseV2Dto response)
+    private string BuildTraceText(DialogueResponseDto response)
     {
         if (response.trace == null)
         {

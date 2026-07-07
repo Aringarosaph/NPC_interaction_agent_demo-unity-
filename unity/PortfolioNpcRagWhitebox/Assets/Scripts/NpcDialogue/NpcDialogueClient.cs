@@ -5,9 +5,7 @@ using UnityEngine.Networking;
 
 public class NpcDialogueClient : MonoBehaviour
 {
-    public string endpoint = "http://127.0.0.1:8008/api/v1/dialogue";
-    public string v2Endpoint = "http://127.0.0.1:8008/api/v2/dialogue";
-    public bool useV2Api = true;
+    public string endpoint = "http://127.0.0.1:8008/api/dialogue";
     public string sessionId = "local_session_001";
     public string playerId = "local_player";
     public SpeechBubbleController playerBubble;
@@ -15,17 +13,13 @@ public class NpcDialogueClient : MonoBehaviour
     public float npcBubbleSeconds = 2.4f;
 
     [System.NonSerialized] public DialogueResponseDto lastResponse;
-    [System.NonSerialized] public DialogueResponseV2Dto lastResponseV2;
     [System.NonSerialized] public string lastError;
-    [System.NonSerialized] public bool lastUsedV2;
 
     public IEnumerator SendToNpc(NpcAgentMarker npc, float distance, string playerText)
     {
         if (npc == null || string.IsNullOrWhiteSpace(playerText)) yield break;
         lastResponse = null;
-        lastResponseV2 = null;
         lastError = null;
-        lastUsedV2 = false;
 
         if (playerBubble != null)
         {
@@ -45,40 +39,21 @@ public class NpcDialogueClient : MonoBehaviour
         string json = JsonUtility.ToJson(dto);
         byte[] body = Encoding.UTF8.GetBytes(json);
 
-        if (useV2Api)
-        {
-            yield return SendV2Request(body);
-            if (lastResponseV2 != null)
-            {
-                lastUsedV2 = true;
-                if (agentDebugPanel != null) agentDebugPanel.ApplyResponse(lastResponseV2);
-                yield return ShowUtterances(
-                    npc,
-                    lastResponseV2.utterances,
-                    BuildV2DebugSummary(lastResponseV2)
-                );
-                yield break;
-            }
-
-            Debug.LogWarning($"NPC v2 dialogue failed, falling back to v1: {lastError}");
-            lastError = null;
-        }
-
-        yield return SendV1Request(body);
+        yield return SendRequest(body);
         if (lastResponse == null)
         {
             yield break;
         }
 
-        if (agentDebugPanel != null) agentDebugPanel.ApplyV1Fallback();
+        if (agentDebugPanel != null) agentDebugPanel.ApplyResponse(lastResponse);
         yield return ShowUtterances(
             npc,
             lastResponse.utterances,
-            $"used_knowledge_ids={JoinIds(lastResponse.@internal != null ? lastResponse.@internal.used_knowledge_ids : null)}"
+            BuildDebugSummary(lastResponse)
         );
     }
 
-    private IEnumerator SendV1Request(byte[] body)
+    private IEnumerator SendRequest(byte[] body)
     {
         using (var req = CreateRequest(endpoint, body))
         {
@@ -87,40 +62,18 @@ public class NpcDialogueClient : MonoBehaviour
             if (req.result != UnityWebRequest.Result.Success)
             {
                 lastError = $"{req.error} / {req.downloadHandler.text}";
-                Debug.LogError($"NPC dialogue v1 failed: {lastError}");
+                Debug.LogError($"NPC dialogue failed: {lastError}");
                 yield break;
             }
 
             var resp = JsonUtility.FromJson<DialogueResponseDto>(req.downloadHandler.text);
-            if (resp == null || resp.utterances == null)
+            if (resp == null || resp.utterances == null || resp.trace == null)
             {
-                lastError = $"NPC dialogue v1 returned an invalid response: {req.downloadHandler.text}";
+                lastError = $"NPC dialogue returned an invalid response: {req.downloadHandler.text}";
                 Debug.LogError(lastError);
                 yield break;
             }
             lastResponse = resp;
-        }
-    }
-
-    private IEnumerator SendV2Request(byte[] body)
-    {
-        using (var req = CreateRequest(v2Endpoint, body))
-        {
-            yield return req.SendWebRequest();
-
-            if (req.result != UnityWebRequest.Result.Success)
-            {
-                lastError = $"{req.error} / {req.downloadHandler.text}";
-                yield break;
-            }
-
-            var resp = JsonUtility.FromJson<DialogueResponseV2Dto>(req.downloadHandler.text);
-            if (resp == null || resp.utterances == null || resp.trace == null)
-            {
-                lastError = $"NPC dialogue v2 returned an invalid response: {req.downloadHandler.text}";
-                yield break;
-            }
-            lastResponseV2 = resp;
         }
     }
 
@@ -146,16 +99,16 @@ public class NpcDialogueClient : MonoBehaviour
         }
     }
 
-    private static string BuildV2DebugSummary(DialogueResponseV2Dto resp)
+    private static string BuildDebugSummary(DialogueResponseDto resp)
     {
         if (resp == null || resp.trace == null)
         {
-            return "v2_trace=[]";
+            return "trace=[]";
         }
         string intent = resp.trace.plan != null ? resp.trace.plan.intent : "none";
         int toolCount = resp.trace.tool_calls != null ? resp.trace.tool_calls.Count : 0;
         int eventCount = resp.world_events != null ? resp.world_events.Count : 0;
-        return $"v2 intent={intent} tool_calls={toolCount} world_events={eventCount} used_knowledge_ids={JoinIds(resp.trace.used_knowledge_ids)}";
+        return $"intent={intent} tool_calls={toolCount} world_events={eventCount} used_knowledge_ids={JoinIds(resp.trace.used_knowledge_ids)}";
     }
 
     private static string JoinIds(System.Collections.Generic.List<string> ids)

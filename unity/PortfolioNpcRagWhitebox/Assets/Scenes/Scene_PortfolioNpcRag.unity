@@ -12753,9 +12753,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 20078d503857248dbbd1c01876714c83, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NpcDialogueClient
-  endpoint: http://127.0.0.1:8008/api/v1/dialogue
-  v2Endpoint: http://127.0.0.1:8008/api/v2/dialogue
-  useV2Api: 1
+  endpoint: http://127.0.0.1:8008/api/dialogue
   sessionId: local_session_001
   playerId: local_player
   playerBubble: {fileID: 290999101}

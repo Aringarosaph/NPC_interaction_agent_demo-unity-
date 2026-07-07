@@ -4,7 +4,7 @@ cases:
     npc_id: arknights_amiya
     turns:
       - id: write_preferred_address
-        player_text: 以后叫我小林
+        player_text: 以后叫我小吴
         expect:
           expected_memory_candidate_types:
             - preference
@@ -12,6 +12,6 @@ cases:
         player_text: 你记得怎么叫我吗？
         expect:
           text_contains:
-            - 小林
+            - 小吴
           expected_used_memory_id_suffixes:
             - preferred_address

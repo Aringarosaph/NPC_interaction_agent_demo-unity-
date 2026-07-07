@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "npc_profile.v1",
+  "$id": "npc_profile",
   "title": "NPC Profile",
   "description": "Frozen profile schema for persona-stable small RAG NPC demo.",
   "type": "object",
@@ -18,7 +18,7 @@
   ],
   "properties": {
     "schema_version": {
-      "const": "npc_profile.v1"
+      "const": "npc_profile"
     },
     "npc_id": {
       "type": "string",

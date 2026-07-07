@@ -81,9 +81,7 @@ public static class WhiteboxSceneBuilder
         rangeDetector.currentNpcLabel = currentNpcLabel;
 
         NpcDialogueClient dialogueClient = dialogueSystem.AddComponent<NpcDialogueClient>();
-        dialogueClient.endpoint = "http://127.0.0.1:8008/api/v1/dialogue";
-        dialogueClient.v2Endpoint = "http://127.0.0.1:8008/api/v2/dialogue";
-        dialogueClient.useV2Api = true;
+        dialogueClient.endpoint = "http://127.0.0.1:8008/api/dialogue";
         dialogueClient.playerBubble = playerBubbleAnchor.GetComponentInChildren<SpeechBubbleController>();
         dialogueClient.agentDebugPanel = agentDebugPanel;
 
@@ -129,9 +127,7 @@ public static class WhiteboxSceneBuilder
         DialogueRangeDetector rangeDetector = RequireComponent<DialogueRangeDetector>(dialogueSystem);
         Require(rangeDetector.player == player.transform, "Range detector player binding is missing.");
         NpcDialogueClient dialogueClient = RequireComponent<NpcDialogueClient>(dialogueSystem);
-        Require(dialogueClient.endpoint == "http://127.0.0.1:8008/api/v1/dialogue", "Dialogue endpoint is not the local FastAPI endpoint.");
-        Require(dialogueClient.v2Endpoint == "http://127.0.0.1:8008/api/v2/dialogue", "Dialogue v2 endpoint is not the local FastAPI endpoint.");
-        Require(dialogueClient.useV2Api, "Dialogue client should default to v2 API.");
+        Require(dialogueClient.endpoint == "http://127.0.0.1:8008/api/dialogue", "Dialogue endpoint is not the local FastAPI endpoint.");
         AgentDebugPanelController agentDebugPanel = RequireComponent<AgentDebugPanelController>(RequireObject("AgentDebugPanel"));
         Require(agentDebugPanel.questStatusText != null, "Agent debug panel is missing quest text.");
         Require(agentDebugPanel.relationshipText != null, "Agent debug panel is missing relationship text.");

@@ -11,7 +11,7 @@ from app.orchestrator import DialogueOrchestrator
 from app.state_store import StateStore
 
 
-class DialogueV2AgentFlowTest(unittest.IsolatedAsyncioTestCase):
+class AgentDialogueFlowTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.tmpdir = tempfile.TemporaryDirectory()
         root = Path(self.tmpdir.name)
@@ -28,12 +28,12 @@ class DialogueV2AgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.state_store.close()
         self.tmpdir.cleanup()
 
-    async def test_v2_no_tool_common_dialogue(self) -> None:
-        response = await self.orchestrator.handle_v2(
+    async def test_no_tool_common_dialogue(self) -> None:
+        response = await self.orchestrator.handle(
             self._request("arknights_amiya", "罗德岛的使命是什么？")
         )
 
-        self.assertEqual(response.schema_version, "dialogue_response.v2")
+        self.assertEqual(response.schema_version, "dialogue_response.agent")
         self.assertEqual(response.npc_id, "arknights_amiya")
         self.assertGreaterEqual(len(response.utterances), 1)
         self.assertEqual(response.world_events, [])
@@ -42,8 +42,8 @@ class DialogueV2AgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(response.trace.tool_results, [])
         self.assertIn("amiya_rhodes_mission", response.trace.used_knowledge_ids)
 
-    async def test_v2_accepting_task_starts_quest(self) -> None:
-        response = await self.orchestrator.handle_v2(
+    async def test_accepting_task_starts_quest(self) -> None:
+        response = await self.orchestrator.handle(
             self._request("arknights_amiya", "我愿意帮你，交给我吧。")
         )
 
@@ -57,12 +57,12 @@ class DialogueV2AgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(quest["stage"], 1)
         self.assertEqual(quest["status"], "active")
 
-    async def test_v2_completing_task_advances_quest_and_relationship(self) -> None:
-        await self.orchestrator.handle_v2(
+    async def test_completing_task_advances_quest_and_relationship(self) -> None:
+        await self.orchestrator.handle(
             self._request("arknights_amiya", "我愿意帮你。")
         )
 
-        response = await self.orchestrator.handle_v2(
+        response = await self.orchestrator.handle(
             self._request("arknights_amiya", "我找到了徽章，给你。")
         )
 
@@ -80,22 +80,11 @@ class DialogueV2AgentFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(quest["stage"], 2)
         self.assertEqual(snapshot["relationship"]["relationship_label"], "friendly")
 
-    async def test_v1_handle_still_returns_dialogue_response_v1(self) -> None:
-        response = await self.orchestrator.handle(
-            self._request("wuwa_jinhsi", "我有一个愿望。")
-        )
-        body = response.model_dump()
-
-        self.assertEqual(body["schema_version"], "dialogue_response.v1")
-        self.assertIn("internal", body)
-        self.assertNotIn("trace", body)
-        self.assertNotIn("world_events", body)
-
     @staticmethod
     def _request(npc_id: str, player_text: str) -> DialogueRequest:
         return DialogueRequest(
-            schema_version="dialogue_request.v1",
-            session_id="v2_agent_flow_test",
+            schema_version="dialogue_request.agent",
+            session_id="agent_flow_test",
             player_id="local_player",
             npc_id=npc_id,
             player_text=player_text,

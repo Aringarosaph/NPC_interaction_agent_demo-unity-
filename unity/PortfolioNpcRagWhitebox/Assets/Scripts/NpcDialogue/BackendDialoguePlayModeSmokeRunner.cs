@@ -37,18 +37,6 @@ public class BackendDialoguePlayModeSmokeRunner : MonoBehaviour
             yield break;
         }
 
-        DialogueResponseV2Dto responseV2 = client.lastResponseV2;
-        if (responseV2 != null)
-        {
-            if (responseV2.npc_id != npc.npcId || responseV2.utterances == null || responseV2.utterances.Count == 0)
-            {
-                complete(false, "Unity received an empty or mismatched v2 dialogue response.");
-                yield break;
-            }
-            complete(true, $"{npc.displayName} replied via v2: {responseV2.utterances[0].text}");
-            yield break;
-        }
-
         DialogueResponseDto response = client.lastResponse;
         if (response == null || response.npc_id != npc.npcId || response.utterances == null || response.utterances.Count == 0)
         {

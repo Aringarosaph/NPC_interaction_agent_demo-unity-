@@ -6,10 +6,10 @@ from pathlib import Path
 
 from app.models import (
     AgentPlan,
+    AgentDialogueResponse,
     AgentTrace,
-    DialogueResponse,
-    DialogueResponseV2,
     InternalDebug,
+    NormalizedDialogueResponse,
     ToolCall,
     ToolResult,
     Utterance,
@@ -17,10 +17,10 @@ from app.models import (
 )
 
 
-class DialogueModelsV2Test(unittest.TestCase):
-    def test_v2_response_serializes_agent_trace_and_world_events(self) -> None:
-        response = DialogueResponseV2(
-            turn_id="turn_test_v2",
+class DialogueModelsTest(unittest.TestCase):
+    def test_agent_response_serializes_agent_trace_and_world_events(self) -> None:
+        response = AgentDialogueResponse(
+            turn_id="turn_test_agent",
             npc_id="arknights_amiya",
             utterances=[
                 Utterance(
@@ -68,13 +68,13 @@ class DialogueModelsV2Test(unittest.TestCase):
 
         body = response.model_dump()
 
-        self.assertEqual(body["schema_version"], "dialogue_response.v2")
+        self.assertEqual(body["schema_version"], "dialogue_response.agent")
         self.assertEqual(body["world_events"][0]["event_type"], "quest_started")
         self.assertEqual(body["trace"]["plan"]["intent"], "accept_quest")
         self.assertEqual(body["trace"]["tool_results"][0]["ok"], True)
 
-    def test_v2_response_allows_empty_tool_calls(self) -> None:
-        response = DialogueResponseV2(
+    def test_agent_response_allows_empty_tool_calls(self) -> None:
+        response = AgentDialogueResponse(
             turn_id="turn_no_tool",
             npc_id="genshin_yae_miko",
             utterances=[
@@ -92,9 +92,9 @@ class DialogueModelsV2Test(unittest.TestCase):
         self.assertEqual(body["trace"]["tool_results"], [])
         self.assertEqual(body["world_events"], [])
 
-    def test_v1_response_model_is_unchanged(self) -> None:
-        response = DialogueResponse(
-            turn_id="turn_v1",
+    def test_normalized_response_model_stays_internal(self) -> None:
+        response = NormalizedDialogueResponse(
+            turn_id="turn_internal",
             npc_id="wuwa_jinhsi",
             utterances=[Utterance(text="请说。", emotion="gentle", action="look_at_player", delay_ms=500)],
             internal=InternalDebug(
@@ -106,20 +106,20 @@ class DialogueModelsV2Test(unittest.TestCase):
 
         body = response.model_dump()
 
-        self.assertEqual(body["schema_version"], "dialogue_response.v1")
+        self.assertEqual(body["schema_version"], "dialogue_response.internal")
         self.assertIn("internal", body)
         self.assertNotIn("trace", body)
         self.assertNotIn("world_events", body)
 
     def test_schema_examples_validate_against_models(self) -> None:
         project_root = Path(__file__).resolve().parents[2]
-        response_example = json.loads((project_root / "schemas" / "dialogue_response.v2.example.json").read_text(encoding="utf-8"))
-        trace_example = json.loads((project_root / "schemas" / "agent_trace.v1.example.json").read_text(encoding="utf-8"))
+        response_example = json.loads((project_root / "schemas" / "dialogue_response.agent.example.json").read_text(encoding="utf-8"))
+        trace_example = json.loads((project_root / "schemas" / "agent_trace.example.json").read_text(encoding="utf-8"))
 
-        response = DialogueResponseV2.model_validate(response_example)
+        response = AgentDialogueResponse.model_validate(response_example)
         trace = AgentTrace.model_validate(trace_example)
 
-        self.assertEqual(response.schema_version, "dialogue_response.v2")
+        self.assertEqual(response.schema_version, "dialogue_response.agent")
         self.assertEqual(trace.plan.intent, "answer_with_memory")
 
 

@@ -1,5 +1,5 @@
 {
-  "schema_version": "dialogue_response.v2",
+  "schema_version": "dialogue_response.agent",
   "turn_id": "turn_demo_001",
   "npc_id": "arknights_amiya",
   "utterances": [

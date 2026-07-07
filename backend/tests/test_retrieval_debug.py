@@ -25,7 +25,7 @@ def test_debug_retrieve_expected_chunks() -> None:
 
     for npc_id, query, expected_chunk_id in cases:
         response = client.get(
-            "/api/v1/debug/retrieve",
+            "/api/debug/retrieve",
             params={"npc_id": npc_id, "q": query},
         )
 
@@ -37,7 +37,7 @@ def test_debug_retrieve_expected_chunks() -> None:
 
 def test_debug_retrieve_rejects_unknown_npc() -> None:
     response = client.get(
-        "/api/v1/debug/retrieve",
+        "/api/debug/retrieve",
         params={"npc_id": "missing_npc", "q": "test"},
     )
 
@@ -46,7 +46,7 @@ def test_debug_retrieve_rejects_unknown_npc() -> None:
 
 def test_debug_retrieve_returns_no_chunks_for_unrelated_query() -> None:
     response = client.get(
-        "/api/v1/debug/retrieve",
+        "/api/debug/retrieve",
         params={"npc_id": "arknights_amiya", "q": "香蕉披萨"},
     )
 
@@ -56,7 +56,7 @@ def test_debug_retrieve_returns_no_chunks_for_unrelated_query() -> None:
 
 def test_debug_memories_endpoint_returns_seed_memories() -> None:
     response = client.get(
-        "/api/v1/debug/memories",
+        "/api/debug/memories",
         params={"npc_id": "arknights_amiya", "player_id": "local_player"},
     )
 

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
 from typing import Any, Dict, List
-from .models import DialogueResponse, InternalDebug, Utterance
+from .models import InternalDebug, NormalizedDialogueResponse, Utterance
 
 ALLOWED_EMOTIONS = {"neutral", "warm", "concerned", "resolute", "teasing", "amused", "solemn", "distant", "cautious", "gentle"}
 ALLOWED_ACTIONS = {"idle", "nod", "look_at_player", "small_smile", "sigh", "turn_away", "thoughtful", "bow", "hand_on_chest"}
 
 
 class ResponseNormalizer:
-    def normalize(self, raw: Dict[str, Any], npc_id: str, turn_id: str, sentence_max_chars: int = 28, max_utterances: int = 3) -> DialogueResponse:
+    def normalize(self, raw: Dict[str, Any], npc_id: str, turn_id: str, sentence_max_chars: int = 28, max_utterances: int = 3) -> NormalizedDialogueResponse:
         utterances: List[Utterance] = []
         for item in raw.get("utterances", [])[:max_utterances]:
             text = str(item.get("text", "")).strip()
@@ -25,7 +25,7 @@ class ResponseNormalizer:
             ))
         if not utterances:
             utterances = [Utterance(text="这件事我无法确认。", emotion="neutral", action="idle", delay_ms=500)]
-        return DialogueResponse(
+        return NormalizedDialogueResponse(
             turn_id=turn_id,
             npc_id=npc_id,
             utterances=utterances,

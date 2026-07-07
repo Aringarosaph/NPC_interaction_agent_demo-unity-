@@ -12,7 +12,7 @@ Unity Client
   └─ NpcDialogueClient / HTTP 调后端
 
 Local FastAPI Backend
-  ├─ /api/v1/dialogue
+  ├─ /api/dialogue
   ├─ ProfileLoader: 读取 profile.yaml
   ├─ KnowledgeLoader: 读取 knowledge_chunks.yaml
   ├─ SmallKnowledgeRetriever: TF-IDF 字符 ngram 检索
@@ -34,7 +34,7 @@ Local FastAPI Backend
 1. Unity 检测玩家当前最近 NPC，且距离 <= interaction_radius_m。
 2. 玩家发送输入。
 3. Unity 显示玩家气泡。
-4. Unity POST /api/v1/dialogue。
+4. Unity POST /api/dialogue。
 5. 后端加载 npc profile。
 6. 后端过滤该 npc 可见 knowledge chunks。
 7. 后端用玩家输入 + 最近对话检索 top_k chunks。
@@ -49,4 +49,4 @@ Local FastAPI Backend
 
 MVP 不使用 SSE。后端一次返回完整 JSON，Unity 负责逐句播放。这比流式更稳定，也更适合求职作品集快速落地。
 
-后期可选升级：`/api/v1/dialogue/stream` 使用 SSE，一句一句推送给 Unity。
+后期可选升级：`/api/dialogue/stream` 使用 SSE，一句一句推送给 Unity。

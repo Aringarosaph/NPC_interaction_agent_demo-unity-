@@ -7,26 +7,33 @@
 - Unity editor: `6000.4.2f1`
 - Python runtime: `/Library/Frameworks/Python.framework/Versions/3.14/bin/python3.14`
 - GitHub CLI: `/opt/homebrew/bin/gh`
+- Git LFS: installed and available as `git-lfs/3.7.1`
 - Unity license: Unity Personal, verified by batchmode editor runs.
 - Public character names remain in use for this non-commercial portfolio demo.
-- Local secrets, runtime memory, virtual environments, and Unity generated files are not committed.
-- Agent upgrade scope accepted on 2026-07-07: build a practical v2 game NPC agent loop using the existing three NPCs and current Unity art scene; do not add an original NPC pack, SFT/DPO dry-run, CI, or broad multi-agent simulation in this upgrade.
-- Agent upgrade plan is tracked in `docs/09_agent_upgrade_execution_plan.md`.
+- Local secrets, runtime memory, virtual environments, Unity generated files, and derived memory files are not committed.
+- The project now presents one complete Agent demo rather than a multi-version migration.
 
 ## Phase Checklist
 
-- [x] Phase 00: repository initialized and source package organized.
-- [x] Phase 00: backend virtual environment created and health endpoint verified.
-- [x] Phase 01: mock dialogue endpoint verified for all three NPCs.
-- [x] Phase 02: retrieval debug endpoint and retrieval tests.
-- [x] Phase 03: DeepSeek JSON output integration.
-- [x] Phase 04: SQLite memory write/read flow.
-- [x] Phase 05: Unity whitebox scene and Play Mode backend dialogue smoke.
-- [x] Phase 06: portfolio polish and demo material.
-- [x] Agent Upgrade Batch 1: backend v2 agent core.
-- [x] Agent Upgrade Batch 2: Unity v2 integration and debug UI.
-- [x] Agent Upgrade Batch 3: practical memory policy, self-check, and eval runner.
-- [x] Agent Upgrade Batch 4: portfolio documentation and final validation.
+- [x] Repository initialized and connected to the public GitHub repository.
+- [x] Backend virtual environment created and FastAPI health endpoint verified.
+- [x] Mock dialogue, DeepSeek JSON mode, RAG retrieval, and SQLite memory implemented.
+- [x] Unity playable scene created with third-person movement, NPC range detection, input, nameplates, and speech bubbles.
+- [x] Current art scene and character meshes rebound to the dialogue system.
+- [x] Backend Agent loop implemented with planner, validated tools, SQLite world state, world events, and trace.
+- [x] Unity client integrated with the unified dialogue endpoint and agent debug panel.
+- [x] Practical memory policy, response self-check, and behavior eval runner implemented.
+- [x] README and interview guide refreshed as interviewer-facing Chinese documentation.
+- [x] Public API wording unified around `/api/dialogue` and `/api/health`.
+
+## Public API
+
+- `GET /api/health`
+- `POST /api/dialogue`
+- `GET /api/debug/retrieve`
+- `GET /api/debug/memories`
+
+Unity should call only `POST /api/dialogue` for runtime NPC interaction.
 
 ## Notes For Continuity
 
@@ -34,197 +41,38 @@
 - Keep Unity client requests routed through local FastAPI; do not call DeepSeek directly from Unity.
 - Responses must remain 1-3 short utterances.
 - Cross-world, AI, Unity, backend, and system-prompt questions should hit boundary handling.
-- Python dependencies use compatibility ranges because the original scaffold pins tried to build old `scikit-learn==1.6.0` from source on Python 3.14.
+- Keep `.env`, local SQLite runtime files, Unity generated folders, unused imported art, and TMP dynamic font cache out of commits.
+- Use Git LFS for large Unity art assets that are intentionally tracked.
 - Update this file whenever a phase starts, completes, or changes scope.
 
 ## Local Environment Gaps
 
-- `python3` on PATH still points to macOS system Python 3.9.6.
-- Use the Python 3.14 path above explicitly until PATH is updated.
-- `gh` is installed but `gh auth status` currently reports an invalid token. Git push may still work via Git credentials; otherwise re-authenticate with `gh auth login -h github.com`.
+- `python3` on PATH may still point to macOS system Python. Use the Python 3.14 path above explicitly if needed.
+- `gh auth status` previously reported an invalid token. Git push may still work via Git credentials; otherwise re-authenticate with `gh auth login -h github.com`.
 
-## Validation Log
+## Latest Validation Log
 
-- 2026-06-30: Created `backend/.venv` with Python 3.14.6.
-- 2026-06-30: Installed backend dependencies from `backend/requirements.txt`.
-- 2026-06-30: Ran `python -m compileall app` successfully.
-- 2026-06-30: Started FastAPI locally on `127.0.0.1:8008`.
-- 2026-06-30: `GET /api/v1/health` returned `{"ok":true,"service":"portfolio-npc-rag-agent"}`.
-- 2026-06-30: Mock dialogue for `arknights_amiya` asking about `八重神子` returned one utterance and `used_knowledge_ids=["amiya_boundary_other_worlds"]`.
-- 2026-06-30: Added `backend/tests/test_mock_dialogue.py` covering all three mock NPC responses and out-of-range schema safety.
-- 2026-06-30: Ran `python -m unittest discover -s tests`; 2 tests passed.
-- 2026-06-30: Ran `python -m compileall app tests` successfully.
-- 2026-06-30: Phase 01 live curl checks passed:
-  - `arknights_amiya` / `你知道八重神子吗？` hit `amiya_boundary_other_worlds`.
-  - `genshin_yae_miko` / `我想投稿轻小说。` hit `yae_publishing_house`.
-  - `wuwa_jinhsi` / `我有一个愿望。` hit `jinhsi_wish_custom`.
-- 2026-06-30: Added `GET /api/v1/debug/retrieve?npc_id=...&q=...` for inspectable RAG chunks.
-- 2026-06-30: Added pytest retrieval checks for `源石病`, `轻小说投稿`, `今州愿望`, and `阿米娅认识八重神子吗`.
-- 2026-06-30: Fixed TF-IDF score mapping so visible chunk filtering cannot misalign chunks and scores.
-- 2026-06-30: Ran `python -m pytest -q`; 4 tests and 3 subtests passed.
-- 2026-06-30: Phase 02 live curl checks confirmed:
-  - `源石病` returned `amiya_oripathy_infected`.
-  - `轻小说投稿` returned `yae_publishing_house`.
-  - `今州愿望` returned `jinhsi_wish_custom`.
-  - `阿米娅认识八重神子吗` returned `amiya_boundary_other_worlds`.
-- 2026-06-30: Verified `backend/.env` contains a DeepSeek API key without printing the key.
-- 2026-06-30: Direct DeepSeek JSON smoke test returned `{"ok": true, "text": "pong"}`.
-- 2026-06-30: Phase 03 live dialogue checks with real DeepSeek passed:
-  - `arknights_amiya` / `源石病是什么？` returned 3 JSON utterances and trusted knowledge IDs.
-  - `arknights_amiya` / `你认识八重神子吗？` returned boundary refusal JSON.
-  - `wuwa_jinhsi` / `我有一个愿望。` returned 2 JSON utterances.
-- 2026-06-30: Added LLM client tests for JSON mode, `thinking` disabled, network fallback, and invalid JSON fallback.
-- 2026-06-30: Normalizer no longer leaves bubble text ending on a trailing comma when trimming long model output.
-- 2026-06-30: Ran `python -m pytest -q`; 9 tests and 3 subtests passed.
-- 2026-06-30: Ran `python -m unittest discover -s tests`; 7 tests passed.
-- 2026-06-30: Added deterministic preference memory extraction for explicit address requests such as `以后叫我小林`.
-- 2026-06-30: Added `GET /api/v1/debug/memories?npc_id=...&player_id=...` for inspectable SQLite memories.
-- 2026-06-30: Added isolated SQLite memory tests for write, recall, and NPC-only visibility.
-- 2026-06-30: Fixed preference extraction so recall questions like `你记得怎么叫我吗？` do not create a bogus `吗` memory.
-- 2026-06-30: Retrieval now returns no chunks for unrelated zero-score queries instead of falling through to high-priority boundary chunks.
-- 2026-06-30: Phase 04 live checks passed:
-  - `arknights_amiya` / `以后叫我小林` wrote `mem_arknights_amiya_local_player_preferred_address`.
-  - `debug/memories` for Amiya returned the `小林` preference.
-  - `arknights_amiya` / `你记得怎么叫我吗？` replied with `小林` and created no new memory candidate.
-  - `debug/memories` for Yae Miko returned no Amiya player memory.
-- 2026-06-30: Ran `python -m pytest -q`; 13 tests and 3 subtests passed.
-- 2026-06-30: Ran `python -m unittest discover -s tests`; 9 tests passed.
-- 2026-06-30: Unity batchmode license check succeeded with Unity Personal.
-- 2026-06-30: Added `unity/PortfolioNpcRagWhitebox` Unity `6000.4.2f1` whitebox project.
-- 2026-06-30: Generated `Assets/Scenes/Scene_PortfolioNpcRag.unity` with floor, player capsule, three NPC capsules, third-person camera, dialogue UI, world-space bubbles, and local FastAPI endpoint binding.
-- 2026-06-30: Added Unity scene builder and validator menu entries:
-  - `NPC Demo > Build Whitebox Scene`
-  - `NPC Demo > Validate Whitebox Scene`
-- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.BuildWhiteboxScene` completed successfully.
-- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene` completed successfully with `Whitebox scene validation passed.`
-- 2026-06-30: Confirmed `.gitignore` excludes Unity `Library/`, `Temp/`, `Logs/`, and `UserSettings/` under the whitebox project.
-- 2026-06-30: Re-ran backend regression checks after Unity project generation:
-  - `python -m pytest -q`; 13 tests and 3 subtests passed.
-  - `python -m unittest discover -s tests`; 9 tests passed.
-- 2026-06-30: Refined Unity whitebox controls:
-  - Third-person camera now uses mouse look plus WASD/arrow movement.
-  - Chat input now focuses with Enter near an NPC, unlocks the cursor while typing, and exits with Send/Enter/Escape.
-  - NPC nameplates now sit above the capsules and speech bubbles sit above the nameplates.
-- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.BuildWhiteboxScene` completed successfully after control and nameplate refinements.
-- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene` completed successfully with `Whitebox scene validation passed.`
-- 2026-06-30: Re-ran backend regression checks after Unity control refinements:
-  - `python -m pytest -q`; 13 tests and 3 subtests passed.
-  - `python -m unittest discover -s tests`; 9 tests passed.
-- 2026-06-30: Added MIT license for project code and documentation.
-- 2026-06-30: Added Noto Sans CJK SC Regular under SIL Open Font License 1.1 for Unity Chinese UI text, with local license/source notices.
-- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.BuildWhiteboxScene` completed successfully after Chinese font wiring.
-- 2026-06-30: Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene` completed successfully with all TMP text bound to the Chinese font asset.
-- 2026-06-30: Backend live checks passed while serving on `127.0.0.1:8008`:
-  - `GET /api/v1/health` returned `{"ok":true,"service":"portfolio-npc-rag-agent"}`.
-  - `POST /api/v1/dialogue` for `arknights_amiya` returned 3 utterances with `used_knowledge_ids=["amiya_rhodes_mission"]`.
-- 2026-06-30: Added Unity Play Mode backend smoke:
-  - `BackendDialoguePlayModeSmoke.Run` opens `Scene_PortfolioNpcRag`, enters Play Mode, sends a real Unity client request to local FastAPI, validates the NPC response, and exits with a batchmode status code.
-  - Smoke run completed with `Unity backend Play Mode smoke passed.` and backend logged `POST /api/v1/dialogue HTTP/1.1" 200 OK`.
-- 2026-06-30: Added `WhiteboxSceneBuilder.ClearChineseFontDynamicData` so Play Mode smoke clears TMP runtime glyph cache before exit and keeps font asset diffs clean.
-- 2026-06-30: Rewrote the root `README.md` as an interviewer-facing product guide with project overview, highlights, quick start, backend on/off commands, recording flow, API example, validation commands, layout, and licensing notes.
-- 2026-06-30: Converted the root `README.md` product guide to Chinese while keeping runnable commands, paths, and API fields copyable.
-- 2026-07-01: Added art-scene dialogue rebinding for the imported nature scene and character meshes:
-  - `NPC_Amiya_Mesh`, `NPC_YaeMiko_Mesh`, and `NPC_Jinxi_Mesh` are bound as the active NPC roots/range centers.
-  - Each art NPC receives an editable `NpcInteractionCapsule` child collider using the original whitebox capsule sizing as a starting point.
-  - Unity scene validation and Play Mode backend smoke passed after the art-scene migration.
-  - Scene dependency analysis found 222 actually used art assets, about 299.6 MB before metadata; `T_SNB_Skybox_02.tga` is not used by the current scene and is intentionally left out.
-- 2026-07-07: Accepted the agent upgrade route:
-  - Preserve the current `dialogue_response.v1` behavior while adding a v2 schema and `/api/v2/dialogue`.
-  - Implement validated backend tool use, SQLite world state, planner trace, Unity v2 debug/state UI, practical memory policy, lightweight self-check, and eval reporting.
-  - Keep the existing scene, character models, and three NPCs; new task content should be designed around the existing cast.
-  - Exclude original NPC pack, SFT/DPO dry-run, CI, and broad multi-agent work from this upgrade.
-- 2026-07-07: Agent Upgrade Batch 1.1 baseline audit completed in `docs/agent_upgrade_audit.md`.
-- 2026-07-07: Baseline backend tests before v2 work passed:
-  - `cd backend && .venv/bin/python -m pytest -q`; 13 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 9 tests passed.
-- 2026-07-07: Agent Upgrade Batch 1.2 added additive v2 response contract models:
-  - `AgentPlan`, `ToolCall`, `ToolResult`, `WorldEvent`, `AgentTrace`, and `DialogueResponseV2`.
-  - Added v2 example payloads under `schemas/`.
-  - Verified v1 `DialogueResponse` remains unchanged by model tests.
-- 2026-07-07: Batch 1.2 backend validation passed:
-  - `cd backend && .venv/bin/python -m pytest -q tests/test_models_v2.py`; 4 tests passed.
-  - `cd backend && .venv/bin/python -m pytest -q`; 17 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 13 tests passed.
-  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
-- 2026-07-07: Agent Upgrade Batch 1.3 added a lightweight validated tool system:
-  - Added `backend/app/tools/` with tool specs, execution context/results, registry validation, and in-memory game tools.
-  - Initial tools: `get_player_state`, `get_quest_state`, `start_quest`, `advance_quest`, `update_relationship`, `grant_item`, and `emit_world_event`.
-  - This stage intentionally uses in-memory state; Batch 1.4 will wire tools to SQLite `StateStore`.
-- 2026-07-07: Batch 1.3 backend validation passed:
-  - `cd backend && .venv/bin/python -m pytest -q tests/test_tool_registry.py`; 7 tests passed.
-  - `cd backend && .venv/bin/python -m pytest -q`; 24 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 20 tests passed.
-  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
-- 2026-07-07: Agent Upgrade Batch 1.4 added SQLite world state tracking in `backend/app/state_store.py`.
-  - Added persistent player state, NPC relationship, quest state, inventory item, and world event tables.
-  - Updated default game tool registry to use `StateStore`; retained in-memory state as a test/backend substitute.
-- 2026-07-07: Batch 1.4 backend validation passed:
-  - `cd backend && .venv/bin/python -m pytest -q tests/test_state_store.py tests/test_tool_registry.py`; 11 tests passed.
-  - `cd backend && .venv/bin/python -m pytest -q`; 28 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 24 tests passed.
-  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
-- 2026-07-07: Agent Upgrade Batch 1.5 added the v2 agent loop:
-  - Added deterministic `AgentPlanner`.
-  - Added `DialogueOrchestrator.handle_v2` flow: retrieve, memory, state snapshot, plan, validated tool execution, final utterances, and trace.
-  - Added `POST /api/v2/dialogue` while preserving `/api/v1/dialogue`.
-- 2026-07-07: Batch 1.5 backend validation passed:
-  - `cd backend && .venv/bin/python -m pytest -q tests/test_dialogue_v2_agent_flow.py`; 4 tests passed.
-  - `cd backend && .venv/bin/python -m pytest -q`; 32 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 28 tests passed, with non-fatal ResourceWarning from process-level SQLite connections in the FastAPI app.
-  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
-  - FastAPI TestClient smoke for `/api/v2/dialogue` returned `dialogue_response.v2`, `start_quest`, and `quest_started`.
-- 2026-07-07: Agent Upgrade Batch 2.1 upgraded Unity dialogue client for v2:
-  - Added Unity DTOs for `DialogueResponseV2`, agent trace, tool calls/results, and world events.
-  - `NpcDialogueClient` now defaults to `/api/v2/dialogue` and falls back to v1 if v2 fails.
-  - Play Mode smoke now accepts v2 responses.
-- 2026-07-07: Batch 2.1 validation passed:
-  - `cd backend && .venv/bin/python -m pytest -q`; 32 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 28 tests passed, with the known non-fatal ResourceWarning.
-  - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
-  - Unity Play Mode backend smoke hit `POST /api/v2/dialogue` and passed with `Unity backend Play Mode smoke passed.`
-- 2026-07-07: Agent Upgrade Batch 2.2 added Unity agent debug UI:
-  - Added an in-game `AgentDebugPanel` bound to `NpcDialogueClient`.
-  - The panel displays v2 quest events, relationship changes, inventory grants, planner intent, used knowledge/memory IDs, tool calls, and tool results.
-  - Rebound the current art scene so the panel is present alongside the existing character meshes and dialogue UI.
-- 2026-07-07: Batch 2.2 validation passed:
-  - Unity batchmode `ArtSceneDialogueBinder.BindArtSceneDialogue`; completed with `Art scene dialogue bindings refreshed.`
-  - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
-  - Unity Play Mode backend smoke hit `POST /api/v2/dialogue` and passed with `Unity backend Play Mode smoke passed.`
-- 2026-07-07: Agent Upgrade Batch 3.1 added practical memory policy:
-  - Added `backend/app/memory_policy.py` for allowed memory types, summary/detail/salience validation, sensitive implementation leakage filtering, and keyword sanitization.
-  - Memory writes now support `reflection` memory and supersede old active preferred-address memories when a new preferred address is written.
-  - Debug memory inspection now accepts `include_superseded` so replaced memories can be audited without affecting retrieval.
-- 2026-07-07: Batch 3.1 backend validation passed:
-  - `cd backend && .venv/bin/python -m pytest -q tests/test_memory_policy.py tests/test_memory_store.py`; 5 tests passed.
-  - `cd backend && .venv/bin/python -m pytest -q`; 35 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 31 tests passed, with the known non-fatal ResourceWarning.
-  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
-- 2026-07-07: Agent Upgrade Batch 3.2 added lightweight response self-check:
-  - Added `backend/app/self_check.py` for utterance count, Markdown/list format, implementation leakage, cross-world leakage, failed-tool success claims, and quest-state contradiction checks.
-  - `/api/v2/dialogue` now replaces unsafe normalized output with a conservative in-character fallback and records `trace.reflection`.
-  - Self-check confidence is capped when fallback repair is used.
-- 2026-07-07: Batch 3.2 backend validation passed:
-  - `cd backend && .venv/bin/python -m pytest -q tests/test_self_check.py tests/test_dialogue_v2_agent_flow.py`; 10 tests passed.
-  - `cd backend && .venv/bin/python -m pytest -q`; 41 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 37 tests passed, with the known non-fatal ResourceWarning.
-  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
-- 2026-07-07: Agent Upgrade Batch 3.3 added local behavior evaluation:
-  - Added `eval/run_eval.py`, `eval/metrics.py`, and YAML case suites for persona, RAG boundary, memory, tool use, quest flow, and format safety.
-  - Eval runner calls `/api/v2/dialogue`, records trace-based checks, and writes both Markdown and JSON reports under `eval/reports/`.
-  - Latest committed report target: `eval/reports/latest_report.md` and `eval/reports/latest_report.json`.
-- 2026-07-07: Batch 3.3 validation passed:
-  - `backend/.venv/bin/python -m compileall backend/app backend/tests eval`; passed.
-  - `backend/.venv/bin/python eval/run_eval.py --backend http://127.0.0.1:8008 --out eval/reports/latest_report.md --json-out eval/reports/latest_report.json`; 11/11 cases passed, 13 turns, 100% overall case pass rate.
-  - `cd backend && .venv/bin/python -m pytest -q`; 41 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 37 tests passed, with the known non-fatal ResourceWarning.
-- 2026-07-07: Agent Upgrade Batch 4.1 refreshed portfolio documentation:
-  - Rewrote `README.md` as a Chinese interviewer-facing product guide with overview, architecture, quick start, v1/v2 API examples, validation commands, eval summary, capability mapping, limitations, and licensing notes.
-  - Added `docs/agent_portfolio_interview_guide.md` for fast interview review of project goals, run entry points, implementation hotspots, tradeoffs, latest validation, and future extensions.
-  - Confirmed README and the interview guide do not contain personal recording guidance.
-- 2026-07-07: Agent Upgrade Batch 4.2 final local validation passed:
-  - `cd backend && .venv/bin/python -m pytest -q`; 41 tests and 3 subtests passed.
-  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 37 tests passed, with the known non-fatal ResourceWarning.
-  - `backend/.venv/bin/python -m compileall backend/app backend/tests eval`; passed.
-  - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
-  - `backend/.venv/bin/python eval/run_eval.py --backend http://127.0.0.1:8008 --out eval/reports/latest_report.md --json-out eval/reports/latest_report.json`; 11/11 cases passed, 13 turns, 100% overall case pass rate.
-  - Unity Play Mode backend smoke hit `POST /api/v2/dialogue` and passed with `Unity backend Play Mode smoke passed.`
+- 2026-07-07: Backend full regression passed:
+  - `cd backend && .venv/bin/python -m pytest -q`
+  - Result: 40 tests and 3 subtests passed.
+- 2026-07-07: Backend unittest discovery passed:
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`
+  - Result: 36 tests passed, with known non-fatal SQLite ResourceWarnings from process-level app stores.
+- 2026-07-07: Python compile check passed:
+  - `backend/.venv/bin/python -m compileall backend/app backend/tests eval`
+- 2026-07-07: Unity art scene binding refreshed:
+  - `ArtSceneDialogueBinder.BindArtSceneDialogue`
+  - Result: `Art scene dialogue bindings refreshed.`
+- 2026-07-07: Unity scene validation passed:
+  - `WhiteboxSceneBuilder.ValidateWhiteboxScene`
+  - Result: `Whitebox scene validation passed.`
+- 2026-07-07: Behavior eval passed:
+  - `backend/.venv/bin/python eval/run_eval.py --backend http://127.0.0.1:8008 --out eval/reports/latest_report.md --json-out eval/reports/latest_report.json`
+  - Result: 11/11 cases passed, 13 turns, 100% overall case pass rate.
+- 2026-07-07: Unity Play Mode backend smoke passed:
+  - `BackendDialoguePlayModeSmoke.Run`
+  - Result: Unity client hit `POST /api/dialogue` and logged `Unity backend Play Mode smoke passed.`
+
+## Current User-Facing Summary
+
+This repo is a Unity + FastAPI NPC Agent portfolio demo. It shows three character NPCs in a playable Unity scene and routes player text through a local backend Agent loop with RAG, memory, world state, validated tools, self-check, and traceable Unity debug UI.

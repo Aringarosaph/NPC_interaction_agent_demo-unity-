@@ -7,7 +7,7 @@ from typing import Any, Dict, List
 
 from app.llm_client import LlmClient
 from app.memory_store import MemoryStore
-from app.models import DialogueRequest, DialogueResponse, InternalDebug, ToolResult, Utterance
+from app.models import DialogueRequest, InternalDebug, NormalizedDialogueResponse, ToolResult, Utterance
 from app.orchestrator import DialogueOrchestrator
 from app.self_check import ResponseSelfChecker
 from app.state_store import StateStore
@@ -110,8 +110,8 @@ class ResponseSelfCheckerTest(unittest.TestCase):
         self.assertEqual(result.failure_reason, "quest_state_contradiction")
 
     @staticmethod
-    def _response(texts: List[str]) -> DialogueResponse:
-        return DialogueResponse(
+    def _response(texts: List[str]) -> NormalizedDialogueResponse:
+        return NormalizedDialogueResponse(
             turn_id="turn_self_check",
             npc_id="arknights_amiya",
             utterances=[Utterance(text=text) for text in texts],
@@ -119,7 +119,7 @@ class ResponseSelfCheckerTest(unittest.TestCase):
         )
 
 
-class DialogueV2SelfCheckIntegrationTest(unittest.IsolatedAsyncioTestCase):
+class AgentDialogueSelfCheckIntegrationTest(unittest.IsolatedAsyncioTestCase):
     def setUp(self) -> None:
         self.tmpdir = tempfile.TemporaryDirectory()
         root = Path(self.tmpdir.name)
@@ -131,7 +131,7 @@ class DialogueV2SelfCheckIntegrationTest(unittest.IsolatedAsyncioTestCase):
         self.state_store.close()
         self.tmpdir.cleanup()
 
-    async def test_v2_replaces_unsafe_llm_output_and_records_reflection(self) -> None:
+    async def test_replaces_unsafe_llm_output_and_records_reflection(self) -> None:
         orchestrator = DialogueOrchestrator(
             memory_store=self.memory_store,
             state_store=self.state_store,
@@ -153,7 +153,7 @@ class DialogueV2SelfCheckIntegrationTest(unittest.IsolatedAsyncioTestCase):
             ),
         )
 
-        response = await orchestrator.handle_v2(
+        response = await orchestrator.handle(
             DialogueRequest(
                 session_id="self_check_integration",
                 player_id="local_player",

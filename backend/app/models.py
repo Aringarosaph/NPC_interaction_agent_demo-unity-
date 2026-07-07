@@ -13,7 +13,7 @@ class WorldState(BaseModel):
 
 
 class DialogueRequest(BaseModel):
-    schema_version: str = "dialogue_request.v1"
+    schema_version: str = "dialogue_request.agent"
     session_id: str
     player_id: str = "local_player"
     npc_id: str
@@ -37,8 +37,8 @@ class InternalDebug(BaseModel):
     confidence: float = 0.0
 
 
-class DialogueResponse(BaseModel):
-    schema_version: str = "dialogue_response.v1"
+class NormalizedDialogueResponse(BaseModel):
+    schema_version: str = "dialogue_response.internal"
     turn_id: str
     npc_id: str
     utterances: List[Utterance]
@@ -87,8 +87,8 @@ class AgentTrace(BaseModel):
     confidence: float = Field(default=0.0, ge=0.0, le=1.0)
 
 
-class DialogueResponseV2(BaseModel):
-    schema_version: Literal["dialogue_response.v2"] = "dialogue_response.v2"
+class AgentDialogueResponse(BaseModel):
+    schema_version: Literal["dialogue_response.agent"] = "dialogue_response.agent"
     turn_id: str
     npc_id: str
     utterances: List[Utterance]

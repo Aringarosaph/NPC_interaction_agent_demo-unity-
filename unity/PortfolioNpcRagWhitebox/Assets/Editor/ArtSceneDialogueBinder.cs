@@ -48,9 +48,7 @@ public static class ArtSceneDialogueBinder
 
         rangeDetector.player = player.transform;
         rangeDetector.currentNpcLabel = currentNpcLabel;
-        dialogueClient.endpoint = "http://127.0.0.1:8008/api/v1/dialogue";
-        dialogueClient.v2Endpoint = "http://127.0.0.1:8008/api/v2/dialogue";
-        dialogueClient.useV2Api = true;
+        dialogueClient.endpoint = "http://127.0.0.1:8008/api/dialogue";
         dialogueClient.playerBubble = FindPlayerBubble(player);
         dialogueClient.agentDebugPanel = agentDebugPanel;
         chatInput.inputField = inputField;
