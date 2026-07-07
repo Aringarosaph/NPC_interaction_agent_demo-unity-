@@ -301,6 +301,27 @@ class StateStore:
             ).fetchone()
         )
 
+    def reset_runtime(self, player_id: str | None = None) -> Dict[str, int]:
+        tables = [
+            "world_events",
+            "inventory_items",
+            "quest_states",
+            "npc_relationships",
+            "player_states",
+        ]
+        counts: Dict[str, int] = {}
+        for table in tables:
+            if player_id:
+                cursor = self.conn.execute(
+                    f"DELETE FROM {table} WHERE player_id = ?",
+                    (player_id,),
+                )
+            else:
+                cursor = self.conn.execute(f"DELETE FROM {table}")
+            counts[table] = int(cursor.rowcount)
+        self.conn.commit()
+        return counts
+
     def _ensure_player(self, player_id: str) -> Dict[str, Any]:
         row = self.conn.execute(
             """

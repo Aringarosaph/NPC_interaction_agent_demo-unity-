@@ -232,6 +232,16 @@ class DialogueOrchestrator:
             memories=memories,
         )
 
+    def reset_demo_state(self, player_id: str = "local_player") -> Dict[str, object]:
+        memory_deleted = self.memory_store.reset_runtime(player_id=player_id)
+        state_deleted = self.state_store.reset_runtime(player_id=player_id)
+        return {
+            "ok": True,
+            "player_id": player_id,
+            "memory_records_deleted": memory_deleted,
+            "state_records_deleted": state_deleted,
+        }
+
     @staticmethod
     def _trusted_ids(model_ids: List[str], backend_ids: List[str]) -> List[str]:
         trusted = [item for item in model_ids if item in backend_ids]

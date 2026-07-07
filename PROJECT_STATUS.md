@@ -25,6 +25,7 @@
 - [x] Practical memory policy, response self-check, and behavior eval runner implemented.
 - [x] README and interview guide refreshed as interviewer-facing Chinese documentation.
 - [x] Public API wording unified around `/api/dialogue` and `/api/health`.
+- [x] Unity debug panel reset button clears local demo memory, quest, relationship, inventory, and world event state.
 
 ## Public API
 
@@ -32,6 +33,7 @@
 - `POST /api/dialogue`
 - `GET /api/debug/retrieve`
 - `GET /api/debug/memories`
+- `POST /api/debug/reset`
 
 Unity should call only `POST /api/dialogue` for runtime NPC interaction.
 
@@ -72,6 +74,14 @@ Unity should call only `POST /api/dialogue` for runtime NPC interaction.
 - 2026-07-07: Unity Play Mode backend smoke passed:
   - `BackendDialoguePlayModeSmoke.Run`
   - Result: Unity client hit `POST /api/dialogue` and logged `Unity backend Play Mode smoke passed.`
+- 2026-07-08: Demo reset UI added and validated:
+  - `POST /api/debug/reset?player_id=local_player` cleared runtime memory/state while preserving seed memories.
+  - `cd backend && .venv/bin/python -m pytest -q`; 42 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 38 tests passed, with known non-fatal SQLite ResourceWarnings from process-level app stores.
+  - `backend/.venv/bin/python -m compileall backend/app backend/tests eval`; passed.
+  - Unity batchmode `ArtSceneDialogueBinder.BindArtSceneDialogue`; completed with `Art scene dialogue bindings refreshed.`
+  - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
+  - Unity Play Mode backend smoke hit `POST /api/dialogue` and `POST /api/debug/reset`, then passed with `reset ok.`
 
 ## Current User-Facing Summary
 

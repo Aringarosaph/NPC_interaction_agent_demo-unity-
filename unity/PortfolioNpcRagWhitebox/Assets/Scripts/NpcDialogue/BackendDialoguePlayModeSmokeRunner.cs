@@ -44,7 +44,15 @@ public class BackendDialoguePlayModeSmokeRunner : MonoBehaviour
             yield break;
         }
 
-        complete(true, $"{npc.displayName} replied: {response.utterances[0].text}");
+        yield return client.ResetDemoStateCoroutine();
+
+        if (!client.lastResetOk)
+        {
+            complete(false, $"Dialogue succeeded but reset failed: {client.lastError}");
+            yield break;
+        }
+
+        complete(true, $"{npc.displayName} replied: {response.utterances[0].text}; reset ok.");
     }
 
     private static NpcAgentMarker FindNpc(string npcId)

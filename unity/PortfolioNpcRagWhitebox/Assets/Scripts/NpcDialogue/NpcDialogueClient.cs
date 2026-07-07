@@ -2,10 +2,12 @@ using System.Collections;
 using System.Text;
 using UnityEngine;
 using UnityEngine.Networking;
+using UnityEngine.UI;
 
 public class NpcDialogueClient : MonoBehaviour
 {
     public string endpoint = "http://127.0.0.1:8008/api/dialogue";
+    public string resetEndpoint = "http://127.0.0.1:8008/api/debug/reset";
     public string sessionId = "local_session_001";
     public string playerId = "local_player";
     public SpeechBubbleController playerBubble;
@@ -14,6 +16,29 @@ public class NpcDialogueClient : MonoBehaviour
 
     [System.NonSerialized] public DialogueResponseDto lastResponse;
     [System.NonSerialized] public string lastError;
+    [System.NonSerialized] public bool lastResetOk;
+    [System.NonSerialized] public string lastResetResponseText;
+
+    private Button boundResetButton;
+
+    private void OnEnable()
+    {
+        BindResetButton();
+    }
+
+    private void Start()
+    {
+        BindResetButton();
+    }
+
+    private void OnDisable()
+    {
+        if (boundResetButton != null)
+        {
+            boundResetButton.onClick.RemoveListener(ResetDemoState);
+            boundResetButton = null;
+        }
+    }
 
     public IEnumerator SendToNpc(NpcAgentMarker npc, float distance, string playerText)
     {
@@ -51,6 +76,46 @@ public class NpcDialogueClient : MonoBehaviour
             lastResponse.utterances,
             BuildDebugSummary(lastResponse)
         );
+    }
+
+    public void ResetDemoState()
+    {
+        StartCoroutine(ResetDemoStateCoroutine());
+    }
+
+    public IEnumerator ResetDemoStateCoroutine()
+    {
+        lastResponse = null;
+        lastError = null;
+        lastResetOk = false;
+        lastResetResponseText = null;
+
+        string url = $"{resetEndpoint}?player_id={UnityWebRequest.EscapeURL(playerId)}";
+        using (var req = new UnityWebRequest(url, "POST"))
+        {
+            req.downloadHandler = new DownloadHandlerBuffer();
+            yield return req.SendWebRequest();
+
+            if (req.result != UnityWebRequest.Result.Success)
+            {
+                lastError = $"{req.error} / {req.downloadHandler.text}";
+                Debug.LogError($"NPC demo reset failed: {lastError}");
+                if (agentDebugPanel != null)
+                {
+                    agentDebugPanel.ShowMessage($"重置失败: {req.error}");
+                }
+                yield break;
+            }
+
+            lastResetOk = true;
+            lastResetResponseText = req.downloadHandler.text;
+        }
+
+        if (agentDebugPanel != null)
+        {
+            agentDebugPanel.ResetDisplay("演示状态已重置。");
+        }
+        Debug.Log("NPC demo runtime state reset.");
     }
 
     private IEnumerator SendRequest(byte[] body)
@@ -115,5 +180,20 @@ public class NpcDialogueClient : MonoBehaviour
     {
         if (ids == null || ids.Count == 0) return "[]";
         return "[" + string.Join(", ", ids) + "]";
+    }
+
+    private void BindResetButton()
+    {
+        Button button = agentDebugPanel != null ? agentDebugPanel.resetButton : null;
+        if (button == null || button == boundResetButton)
+        {
+            return;
+        }
+        if (boundResetButton != null)
+        {
+            boundResetButton.onClick.RemoveListener(ResetDemoState);
+        }
+        boundResetButton = button;
+        boundResetButton.onClick.AddListener(ResetDemoState);
     }
 }

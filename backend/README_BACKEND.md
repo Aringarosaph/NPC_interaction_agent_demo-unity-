@@ -63,3 +63,9 @@ Memory debug endpoint:
 ```bash
 curl "http://127.0.0.1:8008/api/debug/memories?npc_id=arknights_amiya&player_id=local_player"
 ```
+
+Reset local demo runtime state:
+
+```bash
+curl -X POST "http://127.0.0.1:8008/api/debug/reset?player_id=local_player"
+```

@@ -72,6 +72,27 @@ class MemoryStoreTest(unittest.IsolatedAsyncioTestCase):
 
         self.assertEqual(yae_memories.memories, [])
 
+    async def test_reset_runtime_clears_player_memory_but_keeps_seed(self) -> None:
+        await self.orchestrator.handle(
+            self._request("arknights_amiya", "以后叫我小吴")
+        )
+
+        deleted = self.memory_store.reset_runtime(player_id="local_player")
+        player_memories = self.orchestrator.debug_memories(
+            npc_id="arknights_amiya",
+            player_id="local_player",
+            include_default=False,
+        )
+        default_memories = self.orchestrator.debug_memories(
+            npc_id="arknights_amiya",
+            player_id="local_player",
+            include_default=True,
+        )
+
+        self.assertEqual(deleted, 1)
+        self.assertEqual(player_memories.memories, [])
+        self.assertTrue(any(memory.player_id == "__default__" for memory in default_memories.memories))
+
     @staticmethod
     def _request(npc_id: str, player_text: str) -> DialogueRequest:
         return DialogueRequest(

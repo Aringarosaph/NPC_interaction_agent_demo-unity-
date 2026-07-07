@@ -75,5 +75,13 @@ def debug_memories(
         raise HTTPException(status_code=500, detail=f"debug_memories_failed: {e}")
 
 
+@app.post("/api/debug/reset")
+def debug_reset_demo_state(player_id: str = Query("local_player", min_length=1)) -> dict:
+    try:
+        return orchestrator.reset_demo_state(player_id=player_id)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"debug_reset_failed: {e}")
+
+
 if __name__ == "__main__":
     uvicorn.run("app.main:app", host=SERVER_HOST, port=SERVER_PORT, reload=True)

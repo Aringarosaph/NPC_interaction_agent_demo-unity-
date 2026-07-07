@@ -71,6 +71,24 @@ class StateStoreTest(unittest.TestCase):
         self.assertEqual(snapshot["inventory"][0]["item_id"], "yae_submission_token")
         self.assertEqual(snapshot["recent_world_events"][0]["event_type"], "item_granted")
 
+    def test_reset_runtime_clears_player_state(self) -> None:
+        self.store.start_quest("local_player", "arknights_amiya", "shared_field_request")
+        self.store.update_relationship("local_player", "arknights_amiya", 6, "demo")
+        self.store.grant_item("local_player", "demo_badge", 1, "turn_reset")
+        self.store.log_world_event("demo_event", "arknights_amiya", "local_player", {"ok": True})
+
+        counts = self.store.reset_runtime(player_id="local_player")
+        quest = self.store.get_quest_state("local_player", "shared_field_request")
+        snapshot = self.store.get_player_snapshot("local_player", "arknights_amiya")
+
+        self.assertEqual(counts["quest_states"], 1)
+        self.assertEqual(counts["npc_relationships"], 1)
+        self.assertEqual(counts["inventory_items"], 1)
+        self.assertEqual(counts["world_events"], 1)
+        self.assertEqual(quest["status"], "not_started")
+        self.assertEqual(snapshot["relationship"]["relationship_label"], "neutral")
+        self.assertEqual(snapshot["inventory"], [])
+
     def test_advance_requires_active_quest_and_expected_stage(self) -> None:
         with self.assertRaises(ValueError):
             self.store.advance_quest("local_player", "wuwa_jinhsi", "shared_field_request")

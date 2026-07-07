@@ -128,11 +128,13 @@ public static class WhiteboxSceneBuilder
         Require(rangeDetector.player == player.transform, "Range detector player binding is missing.");
         NpcDialogueClient dialogueClient = RequireComponent<NpcDialogueClient>(dialogueSystem);
         Require(dialogueClient.endpoint == "http://127.0.0.1:8008/api/dialogue", "Dialogue endpoint is not the local FastAPI endpoint.");
+        Require(dialogueClient.resetEndpoint == "http://127.0.0.1:8008/api/debug/reset", "Reset endpoint is not the local FastAPI reset endpoint.");
         AgentDebugPanelController agentDebugPanel = RequireComponent<AgentDebugPanelController>(RequireObject("AgentDebugPanel"));
         Require(agentDebugPanel.questStatusText != null, "Agent debug panel is missing quest text.");
         Require(agentDebugPanel.relationshipText != null, "Agent debug panel is missing relationship text.");
         Require(agentDebugPanel.inventoryText != null, "Agent debug panel is missing inventory text.");
         Require(agentDebugPanel.traceText != null, "Agent debug panel is missing trace text.");
+        Require(agentDebugPanel.resetButton != null, "Agent debug panel is missing reset button.");
         Require(dialogueClient.agentDebugPanel == agentDebugPanel, "Dialogue client is not bound to the agent debug panel.");
         PlayerChatInput chatInput = RequireComponent<PlayerChatInput>(dialogueSystem);
         Require(chatInput.playerController == playerController, "Chat input is not bound to the player controller.");
@@ -429,15 +431,16 @@ public static class WhiteboxSceneBuilder
         rect.anchorMax = new Vector2(1f, 1f);
         rect.pivot = new Vector2(1f, 1f);
         rect.anchoredPosition = new Vector2(-18f, -18f);
-        rect.sizeDelta = new Vector2(390f, 250f);
+        rect.sizeDelta = new Vector2(390f, 500f);
         Image image = root.AddComponent<Image>();
         image.color = new Color(0.04f, 0.05f, 0.06f, 0.82f);
 
         AgentDebugPanelController panel = root.AddComponent<AgentDebugPanelController>();
-        panel.questStatusText = CreatePanelText(root.transform, "QuestStatusText", "任务: 无", new Vector2(14f, -14f), new Vector2(362f, 54f), 16f);
+        panel.questStatusText = CreatePanelText(root.transform, "QuestStatusText", "任务: 无", new Vector2(14f, -14f), new Vector2(252f, 54f), 16f);
+        panel.resetButton = CreateButton(root.transform, "ResetDemoButton", "重置", new Vector2(1f, 1f), new Vector2(1f, 1f), new Vector2(-60f, -30f), new Vector2(92f, 32f));
         panel.relationshipText = CreatePanelText(root.transform, "RelationshipText", "关系: 0 (neutral)", new Vector2(14f, -76f), new Vector2(362f, 24f), 16f);
         panel.inventoryText = CreatePanelText(root.transform, "InventoryText", "背包: 无新增", new Vector2(14f, -108f), new Vector2(362f, 44f), 16f);
-        panel.traceText = CreatePanelText(root.transform, "AgentTraceText", "等待对话。", new Vector2(14f, -160f), new Vector2(362f, 78f), 14f);
+        panel.traceText = CreatePanelText(root.transform, "AgentTraceText", "等待对话。", new Vector2(14f, -160f), new Vector2(362f, 326f), 14f);
         return panel;
     }
 

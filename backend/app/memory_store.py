@@ -162,6 +162,25 @@ class MemoryStore:
         self.upsert_record(record)
         return memory_id
 
+    def reset_runtime(self, player_id: str | None = None) -> int:
+        if player_id:
+            cursor = self.conn.execute(
+                """
+                DELETE FROM memories
+                WHERE player_id = ? AND write_protected = 0
+                """,
+                (player_id,),
+            )
+        else:
+            cursor = self.conn.execute(
+                """
+                DELETE FROM memories
+                WHERE write_protected = 0
+                """
+            )
+        self.conn.commit()
+        return int(cursor.rowcount)
+
     def _supersede_preferred_address(self, npc_id: str, player_id: str, keep_memory_id: str) -> None:
         rows = self.conn.execute(
             """

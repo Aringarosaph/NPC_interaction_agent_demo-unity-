@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using System.Text;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AgentDebugPanelController : MonoBehaviour
 {
@@ -9,6 +10,7 @@ public class AgentDebugPanelController : MonoBehaviour
     public TMP_Text relationshipText;
     public TMP_Text inventoryText;
     public TMP_Text traceText;
+    public Button resetButton;
 
     private readonly Dictionary<string, string> questStatuses = new Dictionary<string, string>();
     private readonly Dictionary<string, int> questStages = new Dictionary<string, int>();
@@ -39,6 +41,22 @@ public class AgentDebugPanelController : MonoBehaviour
 
         RefreshStaticTexts();
         SetTrace(BuildTraceText(response));
+    }
+
+    public void ResetDisplay(string message = "演示状态已重置。")
+    {
+        questStatuses.Clear();
+        questStages.Clear();
+        inventory.Clear();
+        relationshipScore = 0f;
+        relationshipLabel = "neutral";
+        RefreshStaticTexts();
+        SetTrace(message);
+    }
+
+    public void ShowMessage(string message)
+    {
+        SetTrace(message);
     }
 
     private void ApplyWorldEvent(WorldEventDto worldEvent)
