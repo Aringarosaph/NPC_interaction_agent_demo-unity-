@@ -12995,6 +12995,10 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 9100000, guid: 7317538a5c2564c48883f8f16c2e261c, type: 2}
     - target: {fileID: 5866666021909216657, guid: 6c3378629c6f94f95be9a34db4a730d8, type: 3}
+      propertyPath: m_CullingMode
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5866666021909216657, guid: 6c3378629c6f94f95be9a34db4a730d8, type: 3}
       propertyPath: m_ApplyRootMotion
       value: 0
       objectReference: {fileID: 0}
@@ -13336,7 +13340,7 @@ MonoBehaviour:
       weight: 30
   actionPresets:
   - id: idle
-    stateName: idle
+    stateName: gesture_idle
     duration: 0
   - id: nod
     stateName: nod
@@ -13353,6 +13357,7 @@ MonoBehaviour:
   - id: hand_on_chest
     stateName: hand_on_chest
     duration: 3.0000002
+  actionLayerIndex: 1
   expressionBlendSeconds: 0.2
   actionCrossFadeSeconds: 0.15
   enableBlink: 1

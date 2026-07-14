@@ -149,11 +149,29 @@ public class AgentDebugPanelController : MonoBehaviour
         {
             builder.AppendLine(reason);
         }
+        builder.AppendLine($"Performance: {PerformanceSummary(response.utterances)}");
         builder.AppendLine($"Knowledge: {Join(response.trace.used_knowledge_ids)}");
         builder.AppendLine($"Memory: {Join(response.trace.used_memory_ids)}");
         builder.AppendLine($"Tools: {ToolNames(response.trace.tool_calls)}");
         builder.Append($"Results: {ToolResults(response.trace.tool_results)}");
         return builder.ToString();
+    }
+
+    private static string PerformanceSummary(List<UtteranceDto> utterances)
+    {
+        if (utterances == null || utterances.Count == 0)
+        {
+            return "[]";
+        }
+
+        var performances = new List<string>();
+        foreach (UtteranceDto utterance in utterances)
+        {
+            string expression = string.IsNullOrEmpty(utterance.expression) ? "neutral" : utterance.expression;
+            string action = string.IsNullOrEmpty(utterance.action) ? "idle" : utterance.action;
+            performances.Add($"{expression}/{action}");
+        }
+        return string.Join(" -> ", performances);
     }
 
     private void SetTrace(string value)

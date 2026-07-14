@@ -208,7 +208,7 @@ ModelImporter:
   humanDescription:
     serializedVersion: 3
     human:
-    - boneName: "\u8170"
+    - boneName: "\u30B0\u30EB\u30FC\u30D62"
       humanName: Hips
       limit:
         min: {x: 0, y: 0, z: 0}

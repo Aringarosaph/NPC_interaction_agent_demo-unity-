@@ -17,8 +17,28 @@ public class YaeMikoPerformanceSmokeRunner : MonoBehaviour
 
         NpcPerformanceController performance = marker.performanceController;
         performance.ResetPerformance();
+        yield return new WaitForSeconds(0.3f);
+        float idleTilt = GetBodyTilt(performance.animator);
+        AnimatorStateInfo baseBefore = performance.animator.GetCurrentAnimatorStateInfo(0);
+
         performance.PlayPerformance("teasing", "nod", 0.5f);
         yield return new WaitForSeconds(0.3f);
+        float gestureTilt = GetBodyTilt(performance.animator);
+        AnimatorStateInfo baseAfter = performance.animator.GetCurrentAnimatorStateInfo(0);
+        Debug.Log(
+            $"YAE_RIG idle_tilt_deg={idleTilt:F3} gesture_tilt_deg={gestureTilt:F3} " +
+            $"base_idle_progress={baseBefore.normalizedTime:F3}->{baseAfter.normalizedTime:F3}");
+
+        if (idleTilt > 15f || gestureTilt > 15f)
+        {
+            complete(false, $"Yae Miko rig is tilted: idle={idleTilt:F2}, gesture={gestureTilt:F2} degrees.");
+            yield break;
+        }
+        if (!baseBefore.IsName("idle") || !baseAfter.IsName("idle") || baseAfter.normalizedTime <= baseBefore.normalizedTime)
+        {
+            complete(false, "Full-body idle layer did not continue while the upper-body gesture played.");
+            yield break;
+        }
 
         NpcPerformanceController.ExpressionPreset teasing = Array.Find(
             performance.expressionPresets,
@@ -40,16 +60,22 @@ public class YaeMikoPerformanceSmokeRunner : MonoBehaviour
             }
         }
 
-        AnimatorStateInfo state = performance.animator.GetCurrentAnimatorStateInfo(0);
-        AnimatorStateInfo nextState = performance.animator.GetNextAnimatorStateInfo(0);
+        AnimatorStateInfo state = performance.animator.GetCurrentAnimatorStateInfo(performance.actionLayerIndex);
+        AnimatorStateInfo nextState = performance.animator.GetNextAnimatorStateInfo(performance.actionLayerIndex);
         if (!state.IsName("nod") && !nextState.IsName("nod"))
         {
             complete(false, $"Expected nod Animator state, current hash={state.shortNameHash}.");
             yield break;
         }
-
         performance.ResetPerformance();
-        complete(true, "teasing BlendShapes and nod Humanoid animation played successfully.");
+        complete(true, "upright full-body idle, teasing BlendShapes, and upper-body nod played successfully.");
+    }
+
+    private static float GetBodyTilt(Animator animator)
+    {
+        Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
+        Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
+        return Vector3.Angle(head.position - hips.position, animator.transform.up);
     }
 
     private static NpcAgentMarker FindYaeMiko()

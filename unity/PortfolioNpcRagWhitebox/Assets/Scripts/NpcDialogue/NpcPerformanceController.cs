@@ -50,6 +50,7 @@ public class NpcPerformanceController : MonoBehaviour
     public Animator animator;
     public ExpressionPreset[] expressionPresets;
     public ActionPreset[] actionPresets;
+    [Min(0)] public int actionLayerIndex = 1;
 
     [Header("Transitions")]
     [Min(0f)] public float expressionBlendSeconds = 0.2f;
@@ -175,6 +176,7 @@ public class NpcPerformanceController : MonoBehaviour
         if (animator != null)
         {
             animator.applyRootMotion = false;
+            animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
         }
     }
 
@@ -268,8 +270,9 @@ public class NpcPerformanceController : MonoBehaviour
     {
         if (animator == null || !actions.TryGetValue(actionId, out ActionPreset action)) return;
         int stateHash = Animator.StringToHash(action.stateName);
-        if (!animator.HasState(0, stateHash)) return;
-        animator.CrossFadeInFixedTime(stateHash, actionCrossFadeSeconds, 0);
+        if (actionLayerIndex < 0 || actionLayerIndex >= animator.layerCount) return;
+        if (!animator.HasState(actionLayerIndex, stateHash)) return;
+        animator.CrossFadeInFixedTime(stateHash, actionCrossFadeSeconds, actionLayerIndex);
     }
 
     private IEnumerator BlinkLoop()

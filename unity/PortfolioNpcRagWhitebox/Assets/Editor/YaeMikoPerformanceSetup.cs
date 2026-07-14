@@ -14,6 +14,7 @@ public static class YaeMikoPerformanceSetup
     private const string ModelPath = "Assets/Mesh/Characters/YaeMiko/八重神子.fbx";
     private const string AnimationFolder = "Assets/Animations/YaeMiko";
     private const string ControllerPath = AnimationFolder + "/YaeMikoPerformance.controller";
+    private const string UpperBodyMaskPath = AnimationFolder + "/YaeMikoUpperBody.mask";
     private const string NpcObjectName = "NPC_YaeMiko_Mesh";
 
     private static readonly string[] ActionIds =
@@ -32,7 +33,8 @@ public static class YaeMikoPerformanceSetup
     {
         Avatar avatar = EnsureHumanoidAvatar();
         Dictionary<string, AnimationClip> clips = ConfigureAnimationImporters();
-        AnimatorController animatorController = BuildAnimatorController(clips);
+        AvatarMask upperBodyMask = BuildUpperBodyMask();
+        AnimatorController animatorController = BuildAnimatorController(clips, upperBodyMask);
 
         ArtSceneDialogueBinder.BindArtSceneDialogue();
         Scene scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
@@ -46,6 +48,7 @@ public static class YaeMikoPerformanceSetup
         animator.avatar = avatar;
         animator.runtimeAnimatorController = animatorController;
         animator.applyRootMotion = false;
+        animator.cullingMode = AnimatorCullingMode.AlwaysAnimate;
 
         NpcPerformanceController performance = npc.GetComponent<NpcPerformanceController>();
         if (performance == null) performance = npc.AddComponent<NpcPerformanceController>();
@@ -53,6 +56,7 @@ public static class YaeMikoPerformanceSetup
         performance.animator = animator;
         performance.expressionPresets = BuildExpressionPresets(names);
         performance.actionPresets = BuildActionPresets(clips);
+        performance.actionLayerIndex = 1;
         performance.blinkBlendShapeName = names["まばたき"];
         performance.enableBlink = true;
 
@@ -80,6 +84,8 @@ public static class YaeMikoPerformanceSetup
 
         AnimatorController animatorController = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
         Require(animatorController != null, "Yae Miko Animator Controller is missing.");
+        Require(animatorController.layers.Length == 2, "Yae Miko Animator Controller should have base idle and gesture layers.");
+        Require(animatorController.layers[1].avatarMask != null, "Yae Miko gesture layer is missing its upper-body Avatar Mask.");
 
         Scene scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
         GameObject npc = GameObject.Find(NpcObjectName);
@@ -99,7 +105,8 @@ public static class YaeMikoPerformanceSetup
         foreach (string actionId in ActionIds)
         {
             Require(performance.actionPresets.Any(p => p.id == actionId), $"Action preset {actionId} is missing.");
-            Require(performance.animator.HasState(0, Animator.StringToHash(actionId)), $"Animator state {actionId} is missing.");
+            string stateName = actionId == "idle" ? "gesture_idle" : actionId;
+            Require(performance.animator.HasState(performance.actionLayerIndex, Animator.StringToHash(stateName)), $"Animator state {stateName} is missing.");
         }
         Debug.Log("Yae Miko performance validation passed.");
     }
@@ -114,9 +121,10 @@ public static class YaeMikoPerformanceSetup
     private static Avatar EnsureHumanoidAvatar()
     {
         Avatar existing = AssetDatabase.LoadAllAssetsAtPath(ModelPath).OfType<Avatar>().FirstOrDefault();
-        if (existing != null && existing.isValid && existing.isHuman) return existing;
+        ModelImporter currentImporter = AssetImporter.GetAtPath(ModelPath) as ModelImporter;
+        if (existing != null && existing.isValid && existing.isHuman && HasExpectedHipMapping(currentImporter)) return existing;
 
-        ModelImporter importer = AssetImporter.GetAtPath(ModelPath) as ModelImporter;
+        ModelImporter importer = currentImporter;
         Require(importer != null, "Yae Miko source model importer was not found.");
         importer.animationType = ModelImporterAnimationType.Human;
         importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
@@ -138,11 +146,19 @@ public static class YaeMikoPerformanceSetup
         return RequireAvatar();
     }
 
+    private static bool HasExpectedHipMapping(ModelImporter importer)
+    {
+        if (importer == null) return false;
+        HumanBone hips = importer.humanDescription.human.FirstOrDefault(
+            bone => bone.humanName == HumanTrait.BoneName[(int)HumanBodyBones.Hips]);
+        return hips.boneName == "グルーブ2";
+    }
+
     private static HumanBone[] BuildHumanoidBoneMap()
     {
         return new[]
         {
-            Bone(HumanBodyBones.Hips, "腰"),
+            Bone(HumanBodyBones.Hips, "グルーブ2"),
             Bone(HumanBodyBones.Spine, "上半身"),
             Bone(HumanBodyBones.Chest, "上半身3"),
             Bone(HumanBodyBones.UpperChest, "上半身2"),
@@ -232,7 +248,31 @@ public static class YaeMikoPerformanceSetup
         return clips;
     }
 
-    private static AnimatorController BuildAnimatorController(Dictionary<string, AnimationClip> clips)
+    private static AvatarMask BuildUpperBodyMask()
+    {
+        AvatarMask mask = AssetDatabase.LoadAssetAtPath<AvatarMask>(UpperBodyMaskPath);
+        if (mask == null)
+        {
+            mask = new AvatarMask { name = "YaeMikoUpperBody" };
+            AssetDatabase.CreateAsset(mask, UpperBodyMaskPath);
+        }
+
+        for (int index = 0; index < (int)AvatarMaskBodyPart.LastBodyPart; index++)
+        {
+            mask.SetHumanoidBodyPartActive((AvatarMaskBodyPart)index, false);
+        }
+        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Body, true);
+        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Head, true);
+        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftArm, true);
+        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightArm, true);
+        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFingers, true);
+        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFingers, true);
+        EditorUtility.SetDirty(mask);
+        AssetDatabase.SaveAssets();
+        return mask;
+    }
+
+    private static AnimatorController BuildAnimatorController(Dictionary<string, AnimationClip> clips, AvatarMask upperBodyMask)
     {
         AnimatorController controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
         if (controller == null)
@@ -240,20 +280,45 @@ public static class YaeMikoPerformanceSetup
             controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
         }
 
-        AnimatorStateMachine stateMachine = controller.layers[0].stateMachine;
-        foreach (ChildAnimatorState childState in stateMachine.states.ToArray())
-        {
-            stateMachine.RemoveState(childState.state);
-        }
+        while (controller.layers.Length < 2) controller.AddLayer("Gesture");
+        while (controller.layers.Length > 2) controller.RemoveLayer(controller.layers.Length - 1);
 
-        for (int index = 0; index < ActionIds.Length; index++)
+        AnimatorControllerLayer baseLayer = controller.layers[0];
+        baseLayer.name = "Base Idle";
+        baseLayer.defaultWeight = 1f;
+        baseLayer.avatarMask = null;
+        AnimatorStateMachine baseStateMachine = baseLayer.stateMachine;
+        foreach (ChildAnimatorState childState in baseStateMachine.states.ToArray())
+        {
+            baseStateMachine.RemoveState(childState.state);
+        }
+        AnimatorState idleState = baseStateMachine.AddState("idle", new Vector3(240f, 80f));
+        idleState.motion = clips["idle"];
+        idleState.writeDefaultValues = true;
+        baseStateMachine.defaultState = idleState;
+
+        AnimatorControllerLayer gestureLayer = controller.layers[1];
+        gestureLayer.name = "Upper Body Gesture";
+        gestureLayer.defaultWeight = 1f;
+        gestureLayer.blendingMode = AnimatorLayerBlendingMode.Override;
+        gestureLayer.avatarMask = upperBodyMask;
+        AnimatorStateMachine gestureStateMachine = gestureLayer.stateMachine;
+        foreach (ChildAnimatorState childState in gestureStateMachine.states.ToArray())
+        {
+            gestureStateMachine.RemoveState(childState.state);
+        }
+        AnimatorState gestureIdle = gestureStateMachine.AddState("gesture_idle", new Vector3(240f, 40f));
+        gestureIdle.motion = null;
+        gestureStateMachine.defaultState = gestureIdle;
+
+        for (int index = 1; index < ActionIds.Length; index++)
         {
             string actionId = ActionIds[index];
-            AnimatorState state = stateMachine.AddState(actionId, new Vector3(240f, 40f + index * 55f));
+            AnimatorState state = gestureStateMachine.AddState(actionId, new Vector3(240f, 40f + index * 55f));
             state.motion = clips[actionId];
             state.writeDefaultValues = true;
-            if (actionId == "idle") stateMachine.defaultState = state;
         }
+        controller.layers = new[] { baseLayer, gestureLayer };
         EditorUtility.SetDirty(controller);
         AssetDatabase.SaveAssets();
         return controller;
@@ -325,7 +390,7 @@ public static class YaeMikoPerformanceSetup
     {
         return ActionIds.Select(actionId => new NpcPerformanceController.ActionPreset(
             actionId,
-            actionId,
+            actionId == "idle" ? "gesture_idle" : actionId,
             actionId == "idle" ? 0f : clips[actionId].length
         )).ToArray();
     }
