@@ -2,12 +2,13 @@
 
 这是一个可本地运行的 Unity + FastAPI NPC Agent 交互 demo。项目把角色设定、RAG 检索、长期记忆、任务状态、后端工具调用、自检修正和 Unity 对话 UI 串成一条完整链路，用来展示游戏内可实装的 NPC Agent loop。
 
-当前场景保留一套风格化自然环境和三名角色模型：阿米娅、八重神子、今汐。玩家以第三人称移动靠近 NPC 后，可以输入文字并看到 NPC 头顶气泡回复；右上角调试面板会同步展示任务、关系、背包、planner intent、使用的知识/记忆、tool calls、tool results 和 self-check reflection。
+当前场景保留一套风格化自然环境和三名 NPC 模型：阿米娅、八重神子、今汐。玩家使用带 Idle/Walk 动画与武器骨骼的安比模型探索场景，可在第一人称和第三人称间切换；靠近 NPC 后可以输入文字并看到 NPC 头顶气泡回复。右上角调试面板会同步展示任务、关系、背包、planner intent、使用的知识/记忆、tool calls、tool results 和 self-check reflection。
 
 ## 核心亮点
 
-- **Unity 实机链路**：第三人称鼠标视角、WASD 移动、NPC 距离检测、中文名字牌、玩家/NPC 气泡、输入框和 agent debug 面板。
+- **Unity 实机链路**：安比角色与 Idle/Walk 状态机、WASD 移动、第一/第三人称切换、第三人称滚轮缩放、NPC 距离检测、中文名字牌、玩家/NPC 气泡、输入框和 agent debug 面板。
 - **受控角色表演**：八重神子的回复可从 6 档 Shape Key 表情和 6 个 Humanoid 原地动作中选择；Unity 平滑切换表情、自动眨眼，并在一次性动作后回到待机。
+- **模型与动画接入**：玩家模型使用同骨架 Generic 动画保留人体与刀具骨骼曲线，脚底基准、碰撞体、动画过渡和相机锚点均经过 Play Mode 校验。
 - **后端 Agent Loop**：`retrieve -> memory -> state snapshot -> planner -> validated tools -> response -> self-check -> trace`。
 - **可验证 RAG**：每个 NPC 独立 profile、knowledge chunks、dialogue examples、memory seed，trace 会返回 `used_knowledge_ids`。
 - **长期记忆策略**：SQLite 本地记忆支持偏好写入/召回，称呼偏好会 supersede 旧记录，敏感实现信息不会落库。
@@ -90,10 +91,12 @@ Assets/Scenes/Scene_PortfolioNpcRag.unity
 Play Mode 操作：
 
 - `WASD` / 方向键移动。
-- 鼠标控制第三人称视角。
+- 鼠标控制当前视角方向。
+- 第三人称下使用鼠标滚轮缩放；macOS 触控板可双指上下滑动缩放。
 - 靠近 NPC 后按 `Enter` 聚焦输入框。
 - 输入后按 `Enter` 或点击 `发送`。
 - 按 `Esc` 退出输入模式并恢复视角控制。
+- 右上角面板点击 `切换视角` 可在稳定第一人称与第三人称之间切换。
 - 右上角面板点击 `重置` 可清空本地记忆、任务、关系、背包和世界事件状态，方便重复演示。
 
 ## API 示例
@@ -233,6 +236,16 @@ Unity Play Mode 后端联调 smoke，需先启动后端：
   -logFile /tmp/npc_yae_performance_playmode.log
 ```
 
+安比玩家动画、刀具骨骼、脚底落地、视角切换与缩放 Play Mode smoke，不依赖后端：
+
+```bash
+"/Applications/Unity/Hub/Editor/6000.4.2f1/Unity.app/Contents/MacOS/Unity" \
+  -batchmode \
+  -projectPath "unity/PortfolioNpcRagWhitebox" \
+  -executeMethod AnbiPlayerPlayModeSmoke.Run \
+  -logFile /tmp/npc_anbi_player_playmode.log
+```
+
 ## 最新评测摘要
 
 最新报告见 `eval/reports/latest_report.md`。
@@ -253,7 +266,7 @@ Unity Play Mode 后端联调 smoke，需先启动后端：
 
 | 能力点 | 项目体现 |
 | --- | --- |
-| 游戏客户端集成 | Unity Play Mode 场景、角色距离检测、输入框、气泡、调试 UI、Shape Key 表情与 Humanoid 动作 |
+| 游戏客户端集成 | Unity Play Mode 场景、安比 Generic 动画与刀具骨骼、第一/第三人称相机、角色距离检测、输入框、气泡、调试 UI、Shape Key 表情与 Humanoid 动作 |
 | LLM/RAG 工程 | 角色 profile、知识 chunk、TF-IDF 检索、边界 chunk、trace 可解释 |
 | Agent 架构 | Planner、工具注册表、世界状态、事件回传、self-check reflection |
 | 后端工程 | FastAPI、Pydantic schema、SQLite memory/state、可测试的服务边界 |
