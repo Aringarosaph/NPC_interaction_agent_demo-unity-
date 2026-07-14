@@ -6,8 +6,10 @@ public class WhiteboxPlayerController : MonoBehaviour
     public float moveSpeed = 4.5f;
     public float rotationSpeed = 540f;
     public Transform cameraTransform;
+    public Animator characterAnimator;
     public bool controlsEnabled = true;
 
+    private static readonly int MoveSpeedId = Animator.StringToHash("MoveSpeed");
     private CharacterController controller;
     private float verticalVelocity;
 
@@ -20,6 +22,7 @@ public class WhiteboxPlayerController : MonoBehaviour
     {
         if (!controlsEnabled)
         {
+            UpdateAnimator(0f);
             ApplyGravity(Vector3.zero);
             return;
         }
@@ -28,6 +31,7 @@ public class WhiteboxPlayerController : MonoBehaviour
         float vertical = Input.GetAxisRaw("Vertical");
         Vector3 input = new Vector3(horizontal, 0f, vertical);
         input = Vector3.ClampMagnitude(input, 1f);
+        UpdateAnimator(input.magnitude);
 
         Vector3 move = input;
         if (cameraTransform != null)
@@ -60,5 +64,11 @@ public class WhiteboxPlayerController : MonoBehaviour
 
         horizontalVelocity.y = verticalVelocity;
         controller.Move(horizontalVelocity * Time.deltaTime);
+    }
+
+    private void UpdateAnimator(float moveAmount)
+    {
+        if (characterAnimator == null) return;
+        characterAnimator.SetFloat(MoveSpeedId, moveAmount, 0.12f, Time.deltaTime);
     }
 }
