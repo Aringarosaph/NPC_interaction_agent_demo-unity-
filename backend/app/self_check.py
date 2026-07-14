@@ -79,7 +79,7 @@ class ResponseSelfChecker:
             text = "呵，这事还得再斟酌。"
         elif npc_id == "wuwa_jinhsi":
             text = "此事仍需再核实。"
-        return Utterance(text=text, emotion="neutral", action="idle", delay_ms=500)
+        return Utterance(text=text, expression="neutral", action="idle", delay_ms=500)
 
     @staticmethod
     def reflection(result: SelfCheckResult) -> Dict[str, str] | None:

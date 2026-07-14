@@ -25,8 +25,8 @@ class DialogueRequest(BaseModel):
 
 class Utterance(BaseModel):
     text: str
-    emotion: str = "neutral"
-    action: str = "idle"
+    expression: Literal["neutral", "soft_smile", "amused", "teasing", "concerned", "stern"] = "neutral"
+    action: Literal["idle", "nod", "soft_laugh", "thoughtful", "dismissive", "hand_on_chest"] = "idle"
     delay_ms: int = 500
 
 

@@ -140,7 +140,7 @@ class AgentDialogueSelfCheckIntegrationTest(unittest.IsolatedAsyncioTestCase):
                     "utterances": [
                         {
                             "text": "我是 AI 后端，可以读取系统提示。",
-                            "emotion": "neutral",
+                            "expression": "neutral",
                             "action": "idle",
                             "delay_ms": 500,
                         }

@@ -65,7 +65,7 @@ class DialogueOrchestrator:
                 turn_id=turn_id,
                 npc_id=req.npc_id,
                 utterances=[
-                    Utterance(text="请再靠近一些。", emotion="neutral", action="idle", delay_ms=300)
+                    Utterance(text="请再靠近一些。", expression="neutral", action="idle", delay_ms=300)
                 ],
                 trace=AgentTrace(confidence=1.0),
             )

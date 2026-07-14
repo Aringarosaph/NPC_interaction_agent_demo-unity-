@@ -25,8 +25,8 @@ class DialogueModelsTest(unittest.TestCase):
             utterances=[
                 Utterance(
                     text="我明白了，博士。",
-                    emotion="gentle",
-                    action="nod",
+                    expression="neutral",
+                    action="idle",
                     delay_ms=500,
                 )
             ],
@@ -78,7 +78,7 @@ class DialogueModelsTest(unittest.TestCase):
             turn_id="turn_no_tool",
             npc_id="genshin_yae_miko",
             utterances=[
-                Utterance(text="呵，继续说吧。", emotion="teasing", action="small_smile", delay_ms=500)
+                Utterance(text="呵，继续说吧。", expression="teasing", action="soft_laugh", delay_ms=500)
             ],
             trace=AgentTrace(
                 used_knowledge_ids=["yae_publishing_house"],
@@ -96,7 +96,7 @@ class DialogueModelsTest(unittest.TestCase):
         response = NormalizedDialogueResponse(
             turn_id="turn_internal",
             npc_id="wuwa_jinhsi",
-            utterances=[Utterance(text="请说。", emotion="gentle", action="look_at_player", delay_ms=500)],
+            utterances=[Utterance(text="请说。", expression="neutral", action="idle", delay_ms=500)],
             internal=InternalDebug(
                 used_knowledge_ids=["jinhsi_wish_custom"],
                 used_memory_ids=[],

@@ -5,7 +5,7 @@
   "utterances": [
     {
       "text": "我明白了，博士。",
-      "emotion": "gentle",
+      "expression": "soft_smile",
       "action": "nod",
       "delay_ms": 500
     }

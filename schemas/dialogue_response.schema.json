@@ -29,7 +29,7 @@
         "type": "object",
         "required": [
           "text",
-          "emotion",
+          "expression",
           "action",
           "delay_ms"
         ],
@@ -37,30 +37,23 @@
           "text": {
             "type": "string"
           },
-          "emotion": {
+          "expression": {
             "enum": [
               "neutral",
-              "warm",
-              "concerned",
-              "resolute",
-              "teasing",
+              "soft_smile",
               "amused",
-              "solemn",
-              "distant",
-              "cautious",
-              "gentle"
+              "teasing",
+              "concerned",
+              "stern"
             ]
           },
           "action": {
             "enum": [
               "idle",
               "nod",
-              "look_at_player",
-              "small_smile",
-              "sigh",
-              "turn_away",
+              "soft_laugh",
               "thoughtful",
-              "bow",
+              "dismissive",
               "hand_on_chest"
             ]
           },

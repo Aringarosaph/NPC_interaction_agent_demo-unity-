@@ -17,6 +17,7 @@ class PromptBuilder:
         identity = p["identity"]
         persona = p["persona"]
         speech = p["speech"]
+        performance_policy = self._performance_policy(p["npc_id"])
         return f"""
 你正在扮演游戏作品集演示中的 NPC：{p['display_name_zh']}。
 
@@ -39,15 +40,28 @@ class PromptBuilder:
 
 【输出风格】
 每轮 1 到 3 句。每句不超过 {speech['sentence_max_chars']} 个中文字符。不要列表，不要 Markdown。
+{performance_policy}
 只输出 json，格式如下：
 {{
-  "utterances": [{{"text": "一句 NPC 台词", "emotion": "neutral|warm|concerned|resolute|teasing|amused|solemn|distant|cautious|gentle", "action": "idle|nod|look_at_player|small_smile|sigh|turn_away|thoughtful|bow|hand_on_chest", "delay_ms": 500}}],
+  "utterances": [{{"text": "一句 NPC 台词", "expression": "neutral|soft_smile|amused|teasing|concerned|stern", "action": "idle|nod|soft_laugh|thoughtful|dismissive|hand_on_chest", "delay_ms": 500}}],
   "used_knowledge_ids": ["chunk_id"],
   "used_memory_ids": ["memory_id"],
   "memory_candidates": [],
   "confidence": 0.0
 }}
 """.strip()
+
+    @staticmethod
+    def _performance_policy(npc_id: str) -> str:
+        if npc_id != "genshin_yae_miko":
+            return "【角色表现】当前角色没有专用表演资源，每句固定输出 expression=neutral、action=idle。"
+        return """【八重神子角色表现】
+- 表情和动作只是强调语气的可选点缀；普通回答固定使用 neutral + idle。
+- soft_smile：温和问候、感谢或认可；amused：确实觉得有趣；teasing：调侃、反问或卖关子。
+- concerned：担忧或认真倾听；stern：警告、制止冒犯或严肃职责。
+- nod：确认或认可；soft_laugh：明确轻笑；thoughtful：思考或回忆；dismissive：调侃式否定或拒绝揭底；hand_on_chest：真诚承诺或郑重表达。
+- 整轮最多只有一句使用非 idle 动作。不要为了有动画而强行动作，不确定时必须使用 neutral + idle。
+- expression 与 action 必须匹配当前这句台词，不能返回枚举以外的值。"""
 
     def _user(self, p: Dict[str, Any], req: DialogueRequest, chunks: List[RetrievedChunk], memories: List[MemorySnippet]) -> str:
         knowledge = "\n".join([

@@ -61,7 +61,7 @@ class LlmClient:
         else:
             text = "我在听。"
         return {
-            "utterances": [{"text": text, "emotion": "neutral", "action": "look_at_player", "delay_ms": 500}],
+            "utterances": [{"text": text, "expression": "neutral", "action": "idle", "delay_ms": 500}],
             "used_knowledge_ids": [],
             "used_memory_ids": [],
             "memory_candidates": [],

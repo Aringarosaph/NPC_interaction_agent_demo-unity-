@@ -33,7 +33,7 @@ class FakeClient:
 class LlmClientTest(unittest.IsolatedAsyncioTestCase):
     async def test_generate_json_uses_deepseek_json_mode_and_thinking_disabled(self) -> None:
         completions = FakeCompletions(
-            content='{"utterances":[{"text":"请说。","emotion":"gentle","action":"nod","delay_ms":500}],"used_knowledge_ids":["k1"],"used_memory_ids":[],"memory_candidates":[],"confidence":0.9}'
+            content='{"utterances":[{"text":"请说。","expression":"neutral","action":"idle","delay_ms":500}],"used_knowledge_ids":["k1"],"used_memory_ids":[],"memory_candidates":[],"confidence":0.9}'
         )
         client = LlmClient(
             api_key="test_key",
