@@ -4,6 +4,7 @@
 *.mat whitespace=-blank-at-eol
 *.meta whitespace=-blank-at-eol
 *.shader whitespace=-blank-at-eol
+*.controller whitespace=-blank-at-eol
 unity/PortfolioNpcRagWhitebox/Assets/Mesh/**/*.fbx filter=lfs diff=lfs merge=lfs -text
 unity/PortfolioNpcRagWhitebox/Assets/Mesh/**/*.FBX filter=lfs diff=lfs merge=lfs -text
 unity/PortfolioNpcRagWhitebox/Assets/Mesh/**/*.tga filter=lfs diff=lfs merge=lfs -text
@@ -12,3 +13,5 @@ unity/PortfolioNpcRagWhitebox/Assets/StylizedNatureBundle/**/*.fbx filter=lfs di
 unity/PortfolioNpcRagWhitebox/Assets/StylizedNatureBundle/**/*.FBX filter=lfs diff=lfs merge=lfs -text
 unity/PortfolioNpcRagWhitebox/Assets/StylizedNatureBundle/**/*.tga filter=lfs diff=lfs merge=lfs -text
 unity/PortfolioNpcRagWhitebox/Assets/StylizedNatureBundle/**/*.psd filter=lfs diff=lfs merge=lfs -text
+unity/PortfolioNpcRagWhitebox/Assets/Animations/**/*.fbx filter=lfs diff=lfs merge=lfs -text
+unity/PortfolioNpcRagWhitebox/Assets/Animations/**/*.FBX filter=lfs diff=lfs merge=lfs -text

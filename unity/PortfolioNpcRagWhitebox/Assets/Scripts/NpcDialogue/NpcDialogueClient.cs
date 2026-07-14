@@ -158,8 +158,12 @@ public class NpcDialogueClient : MonoBehaviour
         {
             float delay = Mathf.Max(0f, utt.delay_ms / 1000f);
             yield return new WaitForSeconds(delay);
+            if (npc.performanceController != null)
+            {
+                npc.performanceController.PlayPerformance(utt.expression, utt.action, npcBubbleSeconds);
+            }
             if (bubble != null) bubble.Show(utt.text, npcBubbleSeconds);
-            Debug.Log($"{npc.displayName}: {utt.text} emotion={utt.emotion} action={utt.action} {debugSummary}");
+            Debug.Log($"{npc.displayName}: {utt.text} expression={utt.expression} action={utt.action} {debugSummary}");
             yield return new WaitForSeconds(npcBubbleSeconds * 0.65f);
         }
     }

@@ -39,7 +39,7 @@ public class DialogueResponseDto
 public class UtteranceDto
 {
     public string text;
-    public string emotion;
+    public string expression;
     public string action;
     public int delay_ms;
 }
