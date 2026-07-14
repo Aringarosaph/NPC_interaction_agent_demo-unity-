@@ -19,6 +19,9 @@ def test_debug_retrieve_expected_chunks() -> None:
     cases = [
         ("arknights_amiya", "源石病", "amiya_oripathy_infected"),
         ("genshin_yae_miko", "轻小说投稿", "yae_publishing_house"),
+        ("genshin_yae_miko", "我的小说开头和主角该怎么改", "yae_submission_advice"),
+        ("genshin_yae_miko", "你会怎样使用杀生樱和雷元素", "yae_electro_arts"),
+        ("genshin_yae_miko", "我很焦虑，害怕失败", "yae_emotional_guidance"),
         ("wuwa_jinhsi", "今州愿望", "jinhsi_wish_custom"),
         ("arknights_amiya", "阿米娅认识八重神子吗", "amiya_boundary_other_worlds"),
     ]

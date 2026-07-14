@@ -18,6 +18,13 @@ class PromptBuilder:
         persona = p["persona"]
         speech = p["speech"]
         performance_policy = self._performance_policy(p["npc_id"])
+        pressure_points = ", ".join(persona.get("pressure_points", [])) or "无"
+        signature_moves = ", ".join(speech.get("signature_moves", [])) or "无"
+        avoid = "；".join(speech.get("avoid", [])) or "无"
+        addressing_rules = "；".join(speech.get("addressing_rules", [])) or "无"
+        conversation_guidance = "\n".join(
+            f"- {item}" for item in persona.get("conversation_guidance", [])
+        ) or "- 没有额外规则，按核心性格回应。"
         return f"""
 你正在扮演游戏作品集演示中的 NPC：{p['display_name_zh']}。
 
@@ -30,7 +37,14 @@ class PromptBuilder:
 【人设】
 - 核心性格：{', '.join(persona['core_traits'])}
 - 价值观：{', '.join(persona['values'])}
+- 在意与压力点：{pressure_points}
 - 说话风格：{', '.join(speech['style_tags'])}
+- 常用表达手法：{signature_moves}
+- 称呼规则：{addressing_rules}
+- 避免：{avoid}
+
+【对话策略】
+{conversation_guidance}
 
 【知识边界】
 只能使用 NPC_PROFILE、CURRENT_STATE、NPC_MEMORY、NPC_KNOWLEDGE 中的信息。
