@@ -88,10 +88,16 @@ public class AnbiPlayerSmokeRunner : MonoBehaviour
 
         CaptureMainCamera("/tmp/anbi_player_smoke.png");
         animator.SetFloat(MoveSpeedId, 0f);
-        yield return new WaitForSeconds(0.35f);
+        yield return null;
         if (!IsState(animator, "Idle"))
         {
-            complete(false, $"Expected Idle after movement stopped, got {CurrentState(animator)}.");
+            complete(false, $"Expected an Idle transition on the first frame after movement stopped, got {CurrentState(animator)}.");
+            yield break;
+        }
+        yield return new WaitForSeconds(0.2f);
+        if (!animator.GetCurrentAnimatorStateInfo(0).IsName("Idle"))
+        {
+            complete(false, $"Expected the Walk-to-Idle crossfade to complete, got {CurrentState(animator)}.");
             yield break;
         }
 

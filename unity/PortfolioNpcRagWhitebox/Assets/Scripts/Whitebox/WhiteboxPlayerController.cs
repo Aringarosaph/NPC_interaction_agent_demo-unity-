@@ -69,6 +69,11 @@ public class WhiteboxPlayerController : MonoBehaviour
     private void UpdateAnimator(float moveAmount)
     {
         if (characterAnimator == null) return;
+        if (moveAmount <= 0.001f)
+        {
+            characterAnimator.SetFloat(MoveSpeedId, 0f);
+            return;
+        }
         characterAnimator.SetFloat(MoveSpeedId, moveAmount, 0.12f, Time.deltaTime);
     }
 }
