@@ -11,6 +11,8 @@ public class AgentDebugPanelController : MonoBehaviour
     public TMP_Text inventoryText;
     public TMP_Text traceText;
     public Button resetButton;
+    public Button viewToggleButton;
+    public SimpleThirdPersonCamera cameraController;
 
     private readonly Dictionary<string, string> questStatuses = new Dictionary<string, string>();
     private readonly Dictionary<string, int> questStages = new Dictionary<string, int>();
@@ -20,8 +22,14 @@ public class AgentDebugPanelController : MonoBehaviour
 
     private void Awake()
     {
+        if (viewToggleButton != null) viewToggleButton.onClick.AddListener(ToggleCameraView);
         RefreshStaticTexts();
         SetTrace("等待对话。");
+    }
+
+    private void OnDestroy()
+    {
+        if (viewToggleButton != null) viewToggleButton.onClick.RemoveListener(ToggleCameraView);
     }
 
     public void ApplyResponse(DialogueResponseDto response)
@@ -57,6 +65,11 @@ public class AgentDebugPanelController : MonoBehaviour
     public void ShowMessage(string message)
     {
         SetTrace(message);
+    }
+
+    private void ToggleCameraView()
+    {
+        if (cameraController != null) cameraController.ToggleViewMode();
     }
 
     private void ApplyWorldEvent(WorldEventDto worldEvent)

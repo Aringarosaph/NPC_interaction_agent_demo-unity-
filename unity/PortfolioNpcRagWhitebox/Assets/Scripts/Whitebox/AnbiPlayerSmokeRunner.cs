@@ -95,7 +95,39 @@ public class AnbiPlayerSmokeRunner : MonoBehaviour
             yield break;
         }
 
-        complete(true, $"Idle/Walk, grounded feet, textured materials ({texturedMaterials}), leg motion ({legDelta:F1} deg), and weapon bones passed.");
+        AgentDebugPanelController debugPanel = UnityEngine.Object.FindFirstObjectByType<AgentDebugPanelController>();
+        SimpleThirdPersonCamera followCamera = Camera.main != null
+            ? Camera.main.GetComponent<SimpleThirdPersonCamera>()
+            : null;
+        if (debugPanel == null || debugPanel.viewToggleButton == null || followCamera == null ||
+            debugPanel.cameraController != followCamera)
+        {
+            complete(false, "Camera view toggle UI binding is missing.");
+            yield break;
+        }
+
+        debugPanel.viewToggleButton.onClick.Invoke();
+        yield return null;
+        Vector3 expectedFirstPersonPosition = player.transform.position +
+                                              Vector3.up * followCamera.firstPersonEyeHeight +
+                                              player.transform.forward * followCamera.firstPersonForwardOffset;
+        if (!followCamera.IsFirstPerson || Vector3.Distance(followCamera.transform.position, expectedFirstPersonPosition) > 0.03f)
+        {
+            complete(false, "First-person camera did not switch to the stable player-root eye anchor.");
+            yield break;
+        }
+        CaptureMainCamera("/tmp/anbi_first_person.png");
+
+        debugPanel.viewToggleButton.onClick.Invoke();
+        float oldDistance = followCamera.ThirdPersonDistance;
+        followCamera.ApplyZoomInput(1f);
+        if (followCamera.IsFirstPerson || followCamera.ThirdPersonDistance >= oldDistance)
+        {
+            complete(false, "Third-person camera did not restore or accept zoom input.");
+            yield break;
+        }
+
+        complete(true, $"Idle/Walk, grounded feet, weapon bones, first-person toggle, and third-person zoom passed.");
     }
 
     private static bool IsState(Animator animator, string stateName)

@@ -35,10 +35,16 @@ public static class ArtSceneDialogueBinder
         GameObject canvasObject = RequireObject("Canvas");
         WhiteboxPlayerController playerController = RequireComponent<WhiteboxPlayerController>(player);
         SimpleThirdPersonCamera followCamera = RequireComponent<SimpleThirdPersonCamera>(RequireObject("Main Camera"));
+        followCamera.minDistance = 2.2f;
+        followCamera.maxDistance = 9f;
+        followCamera.zoomSensitivity = 0.8f;
+        followCamera.zoomSharpness = 12f;
+        followCamera.firstPersonEyeHeight = 1.46f;
+        followCamera.firstPersonForwardOffset = 0.18f;
         TMP_Text currentNpcLabel = RequireObject("CurrentNpcLabel").GetComponent<TMP_Text>();
         TMP_InputField inputField = RequireObject("ChatInput").GetComponent<TMP_InputField>();
         Button sendButton = RequireObject("SendButton").GetComponent<Button>();
-        AgentDebugPanelController agentDebugPanel = EnsureAgentDebugPanel(canvasObject.transform, font);
+        AgentDebugPanelController agentDebugPanel = EnsureAgentDebugPanel(canvasObject.transform, font, followCamera);
 
         DialogueRangeDetector rangeDetector = RequireComponent<DialogueRangeDetector>(RequireObject("DialogueSystem"));
         NpcDialogueClient dialogueClient = rangeDetector.GetComponent<NpcDialogueClient>();
@@ -232,7 +238,10 @@ public static class ArtSceneDialogueBinder
         EditorUtility.SetDirty(bubble);
     }
 
-    private static AgentDebugPanelController EnsureAgentDebugPanel(Transform parent, TMP_FontAsset font)
+    private static AgentDebugPanelController EnsureAgentDebugPanel(
+        Transform parent,
+        TMP_FontAsset font,
+        SimpleThirdPersonCamera cameraController)
     {
         GameObject root = EnsureChild(parent, "AgentDebugPanel");
         RectTransform rect = EnsureRectTransform(root);
@@ -247,6 +256,8 @@ public static class ArtSceneDialogueBinder
         AgentDebugPanelController panel = EnsureComponent<AgentDebugPanelController>(root);
         panel.questStatusText = EnsurePanelText(root.transform, "QuestStatusText", "任务: 无", new Vector2(14f, -14f), new Vector2(252f, 54f), 16f, font);
         panel.resetButton = EnsurePanelButton(root.transform, "ResetDemoButton", "重置", new Vector2(-60f, -30f), new Vector2(92f, 32f), font);
+        panel.viewToggleButton = EnsurePanelButton(root.transform, "ViewToggleButton", "切换视角", new Vector2(-170f, -30f), new Vector2(116f, 32f), font);
+        panel.cameraController = cameraController;
         panel.relationshipText = EnsurePanelText(root.transform, "RelationshipText", "关系: 0 (neutral)", new Vector2(14f, -76f), new Vector2(362f, 24f), 16f, font);
         panel.inventoryText = EnsurePanelText(root.transform, "InventoryText", "背包: 无新增", new Vector2(14f, -108f), new Vector2(362f, 44f), 16f, font);
         panel.traceText = EnsurePanelText(root.transform, "AgentTraceText", "等待对话。", new Vector2(14f, -160f), new Vector2(362f, 326f), 14f, font);
