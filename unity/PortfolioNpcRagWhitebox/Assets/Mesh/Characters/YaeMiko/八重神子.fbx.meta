@@ -320,7 +320,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: "\u8DB3.L"
+    - boneName: "\u8DB3D.L"
       humanName: LeftUpperLeg
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -328,7 +328,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: "\u8DB3.R"
+    - boneName: "\u8DB3D.R"
       humanName: RightUpperLeg
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -336,7 +336,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: "\u3072\u3056.L"
+    - boneName: "\u3072\u3056D.L"
       humanName: LeftLowerLeg
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -344,7 +344,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: "\u3072\u3056.R"
+    - boneName: "\u3072\u3056D.R"
       humanName: RightLowerLeg
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -352,7 +352,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: "\u8DB3\u9996.L"
+    - boneName: "\u8DB3\u9996D.L"
       humanName: LeftFoot
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -360,7 +360,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: "\u8DB3\u9996.R"
+    - boneName: "\u8DB3\u9996D.R"
       humanName: RightFoot
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -368,7 +368,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: "\u3064\u307E\u5148.L"
+    - boneName: "\u8DB3\u5148EX.L"
       humanName: LeftToes
       limit:
         min: {x: 0, y: 0, z: 0}
@@ -376,7 +376,7 @@ ModelImporter:
         value: {x: 0, y: 0, z: 0}
         length: 0
         modified: 0
-    - boneName: "\u3064\u307E\u5148.R"
+    - boneName: "\u8DB3\u5148EX.R"
       humanName: RightToes
       limit:
         min: {x: 0, y: 0, z: 0}

@@ -223,7 +223,7 @@ RectTransform:
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 260, y: 86}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &14410002
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -238,8 +238,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpeechBubbleController
   bubbleText: {fileID: 1760834778}
   canvasGroup: {fileID: 14410003}
+  bubbleRect: {fileID: 14410001}
   defaultSeconds: 2.2
   faceMainCamera: 1
+  minHeight: 54
+  maxHeight: 180
+  verticalPadding: 20
 --- !u!225 &14410003
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -1277,7 +1281,7 @@ RectTransform:
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 260, y: 86}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &117545666
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1292,8 +1296,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpeechBubbleController
   bubbleText: {fileID: 1228132900}
   canvasGroup: {fileID: 117545667}
+  bubbleRect: {fileID: 117545665}
   defaultSeconds: 2.2
   faceMainCamera: 1
+  minHeight: 54
+  maxHeight: 180
+  verticalPadding: 20
 --- !u!225 &117545667
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -2340,7 +2348,7 @@ RectTransform:
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 260, y: 86}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &290999101
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2355,8 +2363,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpeechBubbleController
   bubbleText: {fileID: 1332494541}
   canvasGroup: {fileID: 290999102}
+  bubbleRect: {fileID: 290999100}
   defaultSeconds: 2.2
   faceMainCamera: 1
+  minHeight: 54
+  maxHeight: 180
+  verticalPadding: 20
 --- !u!225 &290999102
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -3500,7 +3512,7 @@ RectTransform:
   m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 260, y: 86}
-  m_Pivot: {x: 0.5, y: 0.5}
+  m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &524011885
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3515,8 +3527,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SpeechBubbleController
   bubbleText: {fileID: 628155379}
   canvasGroup: {fileID: 524011886}
+  bubbleRect: {fileID: 524011884}
   defaultSeconds: 2.2
   faceMainCamera: 1
+  minHeight: 54
+  maxHeight: 180
+  verticalPadding: 20
 --- !u!225 &524011886
 CanvasGroup:
   m_ObjectHideFlags: 0
@@ -13359,7 +13375,8 @@ MonoBehaviour:
     duration: 3.0000002
   actionLayerIndex: 0
   expressionBlendSeconds: 0.2
-  actionCrossFadeSeconds: 0.15
+  actionCrossFadeSeconds: 0.3
+  maxQueuedActions: 4
   enableBlink: 1
   blinkBlendShapeName: "\u307E\u3070\u305F\u304D"
   blinkIntervalMin: 2.5

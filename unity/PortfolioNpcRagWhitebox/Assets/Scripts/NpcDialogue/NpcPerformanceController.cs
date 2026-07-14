@@ -54,7 +54,8 @@ public class NpcPerformanceController : MonoBehaviour
 
     [Header("Transitions")]
     [Min(0f)] public float expressionBlendSeconds = 0.2f;
-    [Min(0f)] public float actionCrossFadeSeconds = 0.15f;
+    [Min(0f)] public float actionCrossFadeSeconds = 0.3f;
+    [Min(1)] public int maxQueuedActions = 4;
 
     [Header("Automatic blink")]
     public bool enableBlink = true;
@@ -68,11 +69,16 @@ public class NpcPerformanceController : MonoBehaviour
     private readonly Dictionary<string, ActionPreset> actions = new Dictionary<string, ActionPreset>(StringComparer.Ordinal);
     private readonly Dictionary<string, int> blendShapeIndices = new Dictionary<string, int>(StringComparer.Ordinal);
     private readonly List<string> controlledBlendShapes = new List<string>();
+    private readonly Queue<ActionPreset> pendingActions = new Queue<ActionPreset>();
     private Coroutine expressionRoutine;
     private Coroutine actionRoutine;
     private Coroutine blinkRoutine;
+    private string activeActionId = "idle";
     private int blinkIndex = -1;
     private bool initialized;
+
+    public string ActiveActionId => activeActionId;
+    public int PendingActionCount => pendingActions.Count;
 
     private void Awake()
     {
@@ -108,14 +114,15 @@ public class NpcPerformanceController : MonoBehaviour
         if (expressionRoutine != null) StopCoroutine(expressionRoutine);
         expressionRoutine = StartCoroutine(ExpressionSequence(safeExpression, Mathf.Max(0f, holdSeconds)));
 
-        if (actionRoutine != null) StopCoroutine(actionRoutine);
-        actionRoutine = StartCoroutine(ActionSequence(safeAction));
+        QueueAction(safeAction);
     }
 
     public void ResetPerformance()
     {
         if (expressionRoutine != null) StopCoroutine(expressionRoutine);
         if (actionRoutine != null) StopCoroutine(actionRoutine);
+        pendingActions.Clear();
+        activeActionId = "idle";
         expressionRoutine = null;
         actionRoutine = null;
         SetExpressionImmediate("neutral");
@@ -254,15 +261,38 @@ public class NpcPerformanceController : MonoBehaviour
         }
     }
 
-    private IEnumerator ActionSequence(string actionId)
+    private void QueueAction(string actionId)
     {
-        if (!actions.TryGetValue(actionId, out ActionPreset action)) yield break;
-        PlayActionImmediate(actionId);
-        if (actionId != "idle" && action.duration > 0f)
+        if (actionId == "idle" || !actions.TryGetValue(actionId, out ActionPreset action)) return;
+        if (pendingActions.Count >= Mathf.Max(1, maxQueuedActions) || IsActionPending(actionId)) return;
+        pendingActions.Enqueue(action);
+        if (actionRoutine == null)
         {
-            yield return new WaitForSeconds(action.duration);
-            PlayActionImmediate("idle");
+            actionRoutine = StartCoroutine(ActionQueueSequence());
         }
+    }
+
+    private bool IsActionPending(string actionId)
+    {
+        if (activeActionId == actionId) return true;
+        foreach (ActionPreset action in pendingActions)
+        {
+            if (action.id == actionId) return true;
+        }
+        return false;
+    }
+
+    private IEnumerator ActionQueueSequence()
+    {
+        while (pendingActions.Count > 0)
+        {
+            ActionPreset action = pendingActions.Dequeue();
+            activeActionId = action.id;
+            PlayActionImmediate(action.id);
+            yield return new WaitForSeconds(Mathf.Max(0.1f, action.duration));
+        }
+        activeActionId = "idle";
+        PlayActionImmediate("idle");
         actionRoutine = null;
     }
 

@@ -22,6 +22,8 @@ public class YaeMikoPerformanceSmokeRunner : MonoBehaviour
         Quaternion[] legReference = GetLegRotations(performance.animator);
 
         performance.PlayPerformance("teasing", "dismissive", 1.2f);
+        yield return new WaitForSeconds(0.05f);
+        performance.PlayPerformance("teasing", "nod", 1.2f);
         float actionRoll = 0f;
         float lowerBodyDelta = 0f;
         bool sawActionState = false;
@@ -36,7 +38,7 @@ public class YaeMikoPerformanceSmokeRunner : MonoBehaviour
         }
         Debug.Log(
             $"YAE_RIG idle_roll_deg={idleRoll:F3} action_roll_max_deg={actionRoll:F3} " +
-            $"lower_body_delta_max_deg={lowerBodyDelta:F3}");
+            $"lower_body_delta_max_deg={lowerBodyDelta:F3} queued={performance.PendingActionCount}");
 
         if (idleRoll > 3f || actionRoll > 8f)
         {
@@ -74,8 +76,45 @@ public class YaeMikoPerformanceSmokeRunner : MonoBehaviour
             complete(false, "Expected dismissive full-body Animator state.");
             yield break;
         }
+
+        if (performance.ActiveActionId != "dismissive" || performance.PendingActionCount != 1)
+        {
+            complete(false, $"Action queue interrupted dismissive: active={performance.ActiveActionId}, queued={performance.PendingActionCount}.");
+            yield break;
+        }
+
+        NpcPerformanceController.ActionPreset dismissive = Array.Find(
+            performance.actionPresets,
+            preset => preset != null && preset.id == "dismissive");
+        yield return new WaitForSeconds(Mathf.Max(0.1f, dismissive.duration - 1.05f + 0.15f));
+        if (performance.ActiveActionId != "nod")
+        {
+            complete(false, $"Queued nod did not start after dismissive completed; active={performance.ActiveActionId}.");
+            yield break;
+        }
+
+        SpeechBubbleController bubble = marker.bubbleAnchor != null
+            ? marker.bubbleAnchor.GetComponentInChildren<SpeechBubbleController>(true)
+            : null;
+        if (bubble == null || bubble.bubbleRect == null)
+        {
+            complete(false, "Yae Miko adaptive speech bubble binding is missing.");
+            yield break;
+        }
+        bubble.Show("短句", 0.2f);
+        yield return null;
+        float shortHeight = bubble.bubbleRect.sizeDelta.y;
+        bubble.Show("这是一句用来验证气泡高度会随着多行文字内容自动增长的测试台词。", 0.2f);
+        yield return null;
+        float longHeight = bubble.bubbleRect.sizeDelta.y;
+        if (longHeight <= shortHeight)
+        {
+            complete(false, $"Speech bubble did not grow for wrapped text: short={shortHeight}, long={longHeight}.");
+            yield break;
+        }
+
         performance.ResetPerformance();
-        complete(true, "upright retargeting, teasing BlendShapes, and full-body dismissive animation played successfully.");
+        complete(true, "weighted leg animation, queued crossfades, teasing BlendShapes, and adaptive bubble height passed.");
     }
 
     private static float GetBodyRoll(Animator animator)

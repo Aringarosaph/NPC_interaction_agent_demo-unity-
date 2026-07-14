@@ -50,7 +50,9 @@ public static class ArtSceneDialogueBinder
         rangeDetector.currentNpcLabel = currentNpcLabel;
         dialogueClient.endpoint = "http://127.0.0.1:8008/api/dialogue";
         dialogueClient.resetEndpoint = "http://127.0.0.1:8008/api/debug/reset";
-        dialogueClient.playerBubble = FindPlayerBubble(player);
+        SpeechBubbleController playerBubble = FindPlayerBubble(player);
+        ConfigureBubbleLayout(playerBubble);
+        dialogueClient.playerBubble = playerBubble;
         dialogueClient.agentDebugPanel = agentDebugPanel;
         chatInput.inputField = inputField;
         chatInput.sendButton = sendButton;
@@ -143,6 +145,7 @@ public static class ArtSceneDialogueBinder
 
         RectTransform canvasRect = EnsureRectTransform(canvasObject);
         canvasRect.sizeDelta = new Vector2(260f, 86f);
+        canvasRect.pivot = new Vector2(0.5f, 0f);
 
         GameObject background = EnsureChild(canvasObject.transform, "BubbleBackground");
         RectTransform backgroundRect = EnsureRectTransform(background);
@@ -170,6 +173,7 @@ public static class ArtSceneDialogueBinder
         SpeechBubbleController bubble = EnsureComponent<SpeechBubbleController>(canvasObject);
         bubble.bubbleText = text;
         bubble.canvasGroup = group;
+        bubble.bubbleRect = canvasRect;
         bubble.faceMainCamera = true;
         return anchor;
     }
@@ -215,6 +219,17 @@ public static class ArtSceneDialogueBinder
         Transform anchor = player.transform.Find("BubbleAnchor");
         if (anchor == null) return player.GetComponentInChildren<SpeechBubbleController>(true);
         return anchor.GetComponentInChildren<SpeechBubbleController>(true);
+    }
+
+    private static void ConfigureBubbleLayout(SpeechBubbleController bubble)
+    {
+        if (bubble == null) return;
+        RectTransform rect = bubble.transform as RectTransform;
+        if (rect == null) return;
+        rect.pivot = new Vector2(0.5f, 0f);
+        bubble.bubbleRect = rect;
+        EditorUtility.SetDirty(rect);
+        EditorUtility.SetDirty(bubble);
     }
 
     private static AgentDebugPanelController EnsureAgentDebugPanel(Transform parent, TMP_FontAsset font)

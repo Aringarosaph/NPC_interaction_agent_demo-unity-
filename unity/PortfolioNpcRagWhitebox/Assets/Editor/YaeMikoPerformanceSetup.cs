@@ -56,6 +56,8 @@ public static class YaeMikoPerformanceSetup
         performance.expressionPresets = BuildExpressionPresets(names);
         performance.actionPresets = BuildActionPresets(clips);
         performance.actionLayerIndex = 0;
+        performance.actionCrossFadeSeconds = 0.3f;
+        performance.maxQueuedActions = 4;
         performance.blinkBlendShapeName = names["まばたき"];
         performance.enableBlink = true;
 
@@ -94,6 +96,8 @@ public static class YaeMikoPerformanceSetup
         Require(performance != null, "NpcPerformanceController is missing.");
         Require(performance.faceRenderer != null && performance.faceRenderer.sharedMesh != null, "Face renderer binding is missing.");
         Require(performance.animator != null && performance.animator.runtimeAnimatorController == animatorController, "Animator binding is missing.");
+        Require(HasExpectedRigMapping(AssetImporter.GetAtPath(ModelPath) as ModelImporter), "Humanoid legs are not mapped to the weighted deform-bone chain.");
+        ValidateWeightedLegBones(performance.faceRenderer);
 
         Dictionary<string, string> names = ResolveBlendShapeNames(performance.faceRenderer.sharedMesh);
         Require(names.Count == RequiredBlendShapes.Length, "Not all required BlendShapes were resolved.");
@@ -108,6 +112,26 @@ public static class YaeMikoPerformanceSetup
         Debug.Log("Yae Miko performance validation passed.");
     }
 
+    private static void ValidateWeightedLegBones(SkinnedMeshRenderer renderer)
+    {
+        string[] expected = { "足D.L", "足D.R", "ひざD.L", "ひざD.R", "足首D.L", "足首D.R" };
+        BoneWeight[] weights = renderer.sharedMesh.boneWeights;
+        foreach (string boneName in expected)
+        {
+            int boneIndex = Array.FindIndex(renderer.bones, bone => bone != null && bone.name == boneName);
+            Require(boneIndex >= 0, $"Skinned mesh is missing weighted leg bone {boneName}.");
+            float totalWeight = 0f;
+            foreach (BoneWeight weight in weights)
+            {
+                if (weight.boneIndex0 == boneIndex) totalWeight += weight.weight0;
+                if (weight.boneIndex1 == boneIndex) totalWeight += weight.weight1;
+                if (weight.boneIndex2 == boneIndex) totalWeight += weight.weight2;
+                if (weight.boneIndex3 == boneIndex) totalWeight += weight.weight3;
+            }
+            Require(totalWeight > 0.01f, $"Skinned mesh leg bone {boneName} has no vertex weight.");
+        }
+    }
+
     private static Avatar RequireAvatar()
     {
         Avatar avatar = AssetDatabase.LoadAllAssetsAtPath(ModelPath).OfType<Avatar>().FirstOrDefault();
@@ -119,7 +143,7 @@ public static class YaeMikoPerformanceSetup
     {
         Avatar existing = AssetDatabase.LoadAllAssetsAtPath(ModelPath).OfType<Avatar>().FirstOrDefault();
         ModelImporter currentImporter = AssetImporter.GetAtPath(ModelPath) as ModelImporter;
-        if (existing != null && existing.isValid && existing.isHuman && HasExpectedHipMapping(currentImporter)) return existing;
+        if (existing != null && existing.isValid && existing.isHuman && HasExpectedRigMapping(currentImporter)) return existing;
 
         ModelImporter importer = currentImporter;
         Require(importer != null, "Yae Miko source model importer was not found.");
@@ -146,15 +170,30 @@ public static class YaeMikoPerformanceSetup
         return RequireAvatar();
     }
 
-    private static bool HasExpectedHipMapping(ModelImporter importer)
+    private static bool HasExpectedRigMapping(ModelImporter importer)
     {
         if (importer == null) return false;
         HumanDescription description = importer.humanDescription;
-        HumanBone hips = description.human.FirstOrDefault(
-            bone => bone.humanName == HumanTrait.BoneName[(int)HumanBodyBones.Hips]);
         SkeletonBone skeletonHips = description.skeleton.FirstOrDefault(bone => bone.name == "腰");
         float hipRoll = Mathf.Abs(Mathf.DeltaAngle(0f, skeletonHips.rotation.eulerAngles.z));
-        return hips.boneName == "腰" && hipRoll < 0.1f;
+        Dictionary<string, string> mappings = description.human.ToDictionary(
+            bone => bone.humanName,
+            bone => bone.boneName,
+            StringComparer.Ordinal);
+        return MappingMatches(mappings, HumanBodyBones.Hips, "腰") &&
+               MappingMatches(mappings, HumanBodyBones.LeftUpperLeg, "足D.L") &&
+               MappingMatches(mappings, HumanBodyBones.RightUpperLeg, "足D.R") &&
+               MappingMatches(mappings, HumanBodyBones.LeftLowerLeg, "ひざD.L") &&
+               MappingMatches(mappings, HumanBodyBones.RightLowerLeg, "ひざD.R") &&
+               MappingMatches(mappings, HumanBodyBones.LeftFoot, "足首D.L") &&
+               MappingMatches(mappings, HumanBodyBones.RightFoot, "足首D.R") &&
+               hipRoll < 0.1f;
+    }
+
+    private static bool MappingMatches(Dictionary<string, string> mappings, HumanBodyBones bone, string modelBoneName)
+    {
+        string humanName = HumanTrait.BoneName[(int)bone];
+        return mappings.TryGetValue(humanName, out string mappedBone) && mappedBone == modelBoneName;
     }
 
     private static HumanBone[] BuildHumanoidBoneMap()
@@ -175,14 +214,14 @@ public static class YaeMikoPerformanceSetup
             Bone(HumanBodyBones.RightLowerArm, "ひじ.R"),
             Bone(HumanBodyBones.LeftHand, "手首.L"),
             Bone(HumanBodyBones.RightHand, "手首.R"),
-            Bone(HumanBodyBones.LeftUpperLeg, "足.L"),
-            Bone(HumanBodyBones.RightUpperLeg, "足.R"),
-            Bone(HumanBodyBones.LeftLowerLeg, "ひざ.L"),
-            Bone(HumanBodyBones.RightLowerLeg, "ひざ.R"),
-            Bone(HumanBodyBones.LeftFoot, "足首.L"),
-            Bone(HumanBodyBones.RightFoot, "足首.R"),
-            Bone(HumanBodyBones.LeftToes, "つま先.L"),
-            Bone(HumanBodyBones.RightToes, "つま先.R"),
+            Bone(HumanBodyBones.LeftUpperLeg, "足D.L"),
+            Bone(HumanBodyBones.RightUpperLeg, "足D.R"),
+            Bone(HumanBodyBones.LeftLowerLeg, "ひざD.L"),
+            Bone(HumanBodyBones.RightLowerLeg, "ひざD.R"),
+            Bone(HumanBodyBones.LeftFoot, "足首D.L"),
+            Bone(HumanBodyBones.RightFoot, "足首D.R"),
+            Bone(HumanBodyBones.LeftToes, "足先EX.L"),
+            Bone(HumanBodyBones.RightToes, "足先EX.R"),
             Bone(HumanBodyBones.LeftEye, "目.L"),
             Bone(HumanBodyBones.RightEye, "目.R"),
         };

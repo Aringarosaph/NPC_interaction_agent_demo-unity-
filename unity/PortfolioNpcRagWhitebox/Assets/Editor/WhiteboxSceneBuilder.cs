@@ -329,6 +329,7 @@ public static class WhiteboxSceneBuilder
 
         RectTransform canvasRect = bubbleCanvas.GetComponent<RectTransform>();
         canvasRect.sizeDelta = new Vector2(260f, 86f);
+        canvasRect.pivot = new Vector2(0.5f, 0f);
 
         GameObject background = new GameObject("BubbleBackground");
         background.transform.SetParent(bubbleCanvas.transform, false);
@@ -358,6 +359,7 @@ public static class WhiteboxSceneBuilder
         SpeechBubbleController bubble = bubbleCanvas.AddComponent<SpeechBubbleController>();
         bubble.bubbleText = text;
         bubble.canvasGroup = group;
+        bubble.bubbleRect = canvasRect;
         return anchor.transform;
     }
 
