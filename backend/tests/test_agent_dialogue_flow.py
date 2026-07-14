@@ -57,6 +57,19 @@ class AgentDialogueFlowTest(unittest.IsolatedAsyncioTestCase):
         self.assertEqual(quest["stage"], 1)
         self.assertEqual(quest["status"], "active")
 
+    async def test_yae_performance_history_does_not_block_task_start(self) -> None:
+        await self.orchestrator.handle(
+            self._request("genshin_yae_miko", "今天鸣神大社有什么趣事？")
+        )
+
+        response = await self.orchestrator.handle(
+            self._request("genshin_yae_miko", "我愿意帮你，交给我吧。")
+        )
+
+        self.assertEqual(response.trace.plan.intent, "start_quest")
+        self.assertEqual([call.tool_name for call in response.trace.tool_calls], ["start_quest"])
+        self.assertEqual([event.event_type for event in response.world_events], ["quest_started"])
+
     async def test_completing_task_advances_quest_and_relationship(self) -> None:
         await self.orchestrator.handle(
             self._request("arknights_amiya", "我愿意帮你。")

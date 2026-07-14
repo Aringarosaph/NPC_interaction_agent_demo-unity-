@@ -12,7 +12,7 @@ from .state_store import StateStore
 from .prompt_builder import PromptBuilder
 from .llm_client import LlmClient
 from .response_normalizer import ResponseNormalizer
-from .performance_policy import PerformanceActionPolicy
+from .performance_history import PerformanceActionHistory
 from .agent_planner import AgentPlanner
 from .self_check import ResponseSelfChecker
 from .models import (
@@ -57,7 +57,7 @@ class DialogueOrchestrator:
         self.prompt_builder = PromptBuilder()
         self.llm = llm or LlmClient()
         self.normalizer = ResponseNormalizer()
-        self.performance_policy = PerformanceActionPolicy()
+        self.performance_history = PerformanceActionHistory()
 
     async def handle(self, req: DialogueRequest) -> AgentDialogueResponse:
         bundle = self.loader.get_bundle(req.npc_id)
@@ -126,7 +126,7 @@ class DialogueOrchestrator:
             state_snapshot=state_snapshot,
             plan=plan.model_dump(),
             tool_results=[result.model_dump() for result in tool_results],
-            recent_actions=self.performance_policy.recent_actions(
+            recent_actions=self.performance_history.recent_actions(
                 req.session_id, req.player_id, req.npc_id
             ),
         )
@@ -167,12 +167,11 @@ class DialogueOrchestrator:
             normalized_response.utterances = [self.self_checker.fallback_utterance(profile, self_check)]
             normalized_response.internal.confidence = min(normalized_response.internal.confidence, 0.35)
 
-        self.performance_policy.apply(
+        self.performance_history.record(
             normalized_response,
             session_id=req.session_id,
             player_id=req.player_id,
             npc_id=req.npc_id,
-            player_text=req.player_text,
         )
 
         for candidate in normalized_response.internal.memory_candidates:
@@ -248,7 +247,7 @@ class DialogueOrchestrator:
     def reset_demo_state(self, player_id: str = "local_player") -> Dict[str, object]:
         memory_deleted = self.memory_store.reset_runtime(player_id=player_id)
         state_deleted = self.state_store.reset_runtime(player_id=player_id)
-        self.performance_policy.reset_player(player_id)
+        self.performance_history.reset_player(player_id)
         return {
             "ok": True,
             "player_id": player_id,

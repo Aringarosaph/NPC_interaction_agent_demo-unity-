@@ -82,11 +82,9 @@ class PromptBuilder:
 - soft_smile：温和问候、感谢或认可；amused：确实觉得有趣；teasing：调侃、反问或卖关子。
 - concerned：担忧或认真倾听；stern：警告、制止冒犯或严肃职责。
 - nod：确认或认可；soft_laugh：明确轻笑；thoughtful：思考或回忆；dismissive：调侃式否定或拒绝揭底；hand_on_chest：真诚承诺或郑重表达。
-- soft_laugh 是低频动作，只用于玩家明确讲笑话、台词确有笑点或角色真的笑出声。普通的从容、觉得有趣、机敏调侃都不构成轻笑，使用 idle、dismissive 或其他语义相符的动作。
-- 在语义同样合适时，优先选择近期没有出现的动作；绝不能为了均匀而选择与台词不符的动作。
+- 本会话最近十轮实际动作（从旧到新）：%s。在语义合适时，优先考虑近期较少使用的动作，但仍由你根据当前台词自然决定，不必刻意轮换。
 - 整轮最多只有一句使用非 idle 动作。不要为了有动画而强行动作，不确定时必须使用 neutral + idle。
-- expression 与 action 必须匹配当前这句台词，不能返回枚举以外的值。
-- 本会话最近四轮实际动作：%s。""" % recent
+- expression 与 action 必须匹配当前这句台词，不能返回枚举以外的值。""" % recent
 
     def _user(self, p: Dict[str, Any], req: DialogueRequest, chunks: List[RetrievedChunk], memories: List[MemorySnippet]) -> str:
         knowledge = "\n".join([
