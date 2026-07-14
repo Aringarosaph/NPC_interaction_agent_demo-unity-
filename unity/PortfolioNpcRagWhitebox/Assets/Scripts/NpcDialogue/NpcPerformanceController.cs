@@ -50,7 +50,7 @@ public class NpcPerformanceController : MonoBehaviour
     public Animator animator;
     public ExpressionPreset[] expressionPresets;
     public ActionPreset[] actionPresets;
-    [Min(0)] public int actionLayerIndex = 1;
+    [Min(0)] public int actionLayerIndex;
 
     [Header("Transitions")]
     [Min(0f)] public float expressionBlendSeconds = 0.2f;

@@ -13340,7 +13340,7 @@ MonoBehaviour:
       weight: 30
   actionPresets:
   - id: idle
-    stateName: gesture_idle
+    stateName: idle
     duration: 0
   - id: nod
     stateName: nod
@@ -13357,7 +13357,7 @@ MonoBehaviour:
   - id: hand_on_chest
     stateName: hand_on_chest
     duration: 3.0000002
-  actionLayerIndex: 1
+  actionLayerIndex: 0
   expressionBlendSeconds: 0.2
   actionCrossFadeSeconds: 0.15
   enableBlink: 1

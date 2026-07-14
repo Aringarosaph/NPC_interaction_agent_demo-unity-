@@ -18,25 +18,34 @@ public class YaeMikoPerformanceSmokeRunner : MonoBehaviour
         NpcPerformanceController performance = marker.performanceController;
         performance.ResetPerformance();
         yield return new WaitForSeconds(0.3f);
-        float idleTilt = GetBodyTilt(performance.animator);
-        AnimatorStateInfo baseBefore = performance.animator.GetCurrentAnimatorStateInfo(0);
+        float idleRoll = GetBodyRoll(performance.animator);
+        Quaternion[] legReference = GetLegRotations(performance.animator);
 
-        performance.PlayPerformance("teasing", "nod", 0.5f);
-        yield return new WaitForSeconds(0.3f);
-        float gestureTilt = GetBodyTilt(performance.animator);
-        AnimatorStateInfo baseAfter = performance.animator.GetCurrentAnimatorStateInfo(0);
-        Debug.Log(
-            $"YAE_RIG idle_tilt_deg={idleTilt:F3} gesture_tilt_deg={gestureTilt:F3} " +
-            $"base_idle_progress={baseBefore.normalizedTime:F3}->{baseAfter.normalizedTime:F3}");
-
-        if (idleTilt > 15f || gestureTilt > 15f)
+        performance.PlayPerformance("teasing", "dismissive", 1.2f);
+        float actionRoll = 0f;
+        float lowerBodyDelta = 0f;
+        bool sawActionState = false;
+        for (int sample = 0; sample < 10; sample++)
         {
-            complete(false, $"Yae Miko rig is tilted: idle={idleTilt:F2}, gesture={gestureTilt:F2} degrees.");
+            yield return new WaitForSeconds(0.1f);
+            actionRoll = Mathf.Max(actionRoll, GetBodyRoll(performance.animator));
+            lowerBodyDelta = Mathf.Max(lowerBodyDelta, GetLargestLegDelta(performance.animator, legReference));
+            AnimatorStateInfo state = performance.animator.GetCurrentAnimatorStateInfo(performance.actionLayerIndex);
+            AnimatorStateInfo nextState = performance.animator.GetNextAnimatorStateInfo(performance.actionLayerIndex);
+            sawActionState |= state.IsName("dismissive") || nextState.IsName("dismissive");
+        }
+        Debug.Log(
+            $"YAE_RIG idle_roll_deg={idleRoll:F3} action_roll_max_deg={actionRoll:F3} " +
+            $"lower_body_delta_max_deg={lowerBodyDelta:F3}");
+
+        if (idleRoll > 3f || actionRoll > 8f)
+        {
+            complete(false, $"Yae Miko rig rolls sideways: idle={idleRoll:F2}, action={actionRoll:F2} degrees.");
             yield break;
         }
-        if (!baseBefore.IsName("idle") || !baseAfter.IsName("idle") || baseAfter.normalizedTime <= baseBefore.normalizedTime)
+        if (lowerBodyDelta < 0.25f)
         {
-            complete(false, "Full-body idle layer did not continue while the upper-body gesture played.");
+            complete(false, $"Full-body action did not animate the legs; max delta={lowerBodyDelta:F3} degrees.");
             yield break;
         }
 
@@ -60,22 +69,43 @@ public class YaeMikoPerformanceSmokeRunner : MonoBehaviour
             }
         }
 
-        AnimatorStateInfo state = performance.animator.GetCurrentAnimatorStateInfo(performance.actionLayerIndex);
-        AnimatorStateInfo nextState = performance.animator.GetNextAnimatorStateInfo(performance.actionLayerIndex);
-        if (!state.IsName("nod") && !nextState.IsName("nod"))
+        if (!sawActionState)
         {
-            complete(false, $"Expected nod Animator state, current hash={state.shortNameHash}.");
+            complete(false, "Expected dismissive full-body Animator state.");
             yield break;
         }
         performance.ResetPerformance();
-        complete(true, "upright full-body idle, teasing BlendShapes, and upper-body nod played successfully.");
+        complete(true, "upright retargeting, teasing BlendShapes, and full-body dismissive animation played successfully.");
     }
 
-    private static float GetBodyTilt(Animator animator)
+    private static float GetBodyRoll(Animator animator)
     {
         Transform hips = animator.GetBoneTransform(HumanBodyBones.Hips);
         Transform head = animator.GetBoneTransform(HumanBodyBones.Head);
-        return Vector3.Angle(head.position - hips.position, animator.transform.up);
+        Vector3 localAxis = animator.transform.InverseTransformDirection((head.position - hips.position).normalized);
+        return Mathf.Abs(Mathf.Atan2(localAxis.x, localAxis.y) * Mathf.Rad2Deg);
+    }
+
+    private static Quaternion[] GetLegRotations(Animator animator)
+    {
+        return new[]
+        {
+            animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg).localRotation,
+            animator.GetBoneTransform(HumanBodyBones.LeftLowerLeg).localRotation,
+            animator.GetBoneTransform(HumanBodyBones.RightUpperLeg).localRotation,
+            animator.GetBoneTransform(HumanBodyBones.RightLowerLeg).localRotation,
+        };
+    }
+
+    private static float GetLargestLegDelta(Animator animator, Quaternion[] reference)
+    {
+        Quaternion[] current = GetLegRotations(animator);
+        float largest = 0f;
+        for (int index = 0; index < current.Length; index++)
+        {
+            largest = Mathf.Max(largest, Quaternion.Angle(reference[index], current[index]));
+        }
+        return largest;
     }
 
     private static NpcAgentMarker FindYaeMiko()

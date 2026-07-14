@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using UnityEditor;
 using UnityEditor.Animations;
 using UnityEditor.SceneManagement;
@@ -14,7 +15,6 @@ public static class YaeMikoPerformanceSetup
     private const string ModelPath = "Assets/Mesh/Characters/YaeMiko/八重神子.fbx";
     private const string AnimationFolder = "Assets/Animations/YaeMiko";
     private const string ControllerPath = AnimationFolder + "/YaeMikoPerformance.controller";
-    private const string UpperBodyMaskPath = AnimationFolder + "/YaeMikoUpperBody.mask";
     private const string NpcObjectName = "NPC_YaeMiko_Mesh";
 
     private static readonly string[] ActionIds =
@@ -33,8 +33,7 @@ public static class YaeMikoPerformanceSetup
     {
         Avatar avatar = EnsureHumanoidAvatar();
         Dictionary<string, AnimationClip> clips = ConfigureAnimationImporters();
-        AvatarMask upperBodyMask = BuildUpperBodyMask();
-        AnimatorController animatorController = BuildAnimatorController(clips, upperBodyMask);
+        AnimatorController animatorController = BuildAnimatorController(clips);
 
         ArtSceneDialogueBinder.BindArtSceneDialogue();
         Scene scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
@@ -56,7 +55,7 @@ public static class YaeMikoPerformanceSetup
         performance.animator = animator;
         performance.expressionPresets = BuildExpressionPresets(names);
         performance.actionPresets = BuildActionPresets(clips);
-        performance.actionLayerIndex = 1;
+        performance.actionLayerIndex = 0;
         performance.blinkBlendShapeName = names["まばたき"];
         performance.enableBlink = true;
 
@@ -84,8 +83,7 @@ public static class YaeMikoPerformanceSetup
 
         AnimatorController animatorController = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
         Require(animatorController != null, "Yae Miko Animator Controller is missing.");
-        Require(animatorController.layers.Length == 2, "Yae Miko Animator Controller should have base idle and gesture layers.");
-        Require(animatorController.layers[1].avatarMask != null, "Yae Miko gesture layer is missing its upper-body Avatar Mask.");
+        Require(animatorController.layers.Length == 1, "Yae Miko Animator Controller should use one full-body layer.");
 
         Scene scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
         GameObject npc = GameObject.Find(NpcObjectName);
@@ -105,8 +103,7 @@ public static class YaeMikoPerformanceSetup
         foreach (string actionId in ActionIds)
         {
             Require(performance.actionPresets.Any(p => p.id == actionId), $"Action preset {actionId} is missing.");
-            string stateName = actionId == "idle" ? "gesture_idle" : actionId;
-            Require(performance.animator.HasState(performance.actionLayerIndex, Animator.StringToHash(stateName)), $"Animator state {stateName} is missing.");
+            Require(performance.animator.HasState(performance.actionLayerIndex, Animator.StringToHash(actionId)), $"Animator state {actionId} is missing.");
         }
         Debug.Log("Yae Miko performance validation passed.");
     }
@@ -132,7 +129,10 @@ public static class YaeMikoPerformanceSetup
 
         importer = AssetImporter.GetAtPath(ModelPath) as ModelImporter;
         HumanDescription description = importer.humanDescription;
-        description.human = BuildHumanoidBoneMap();
+        HumanBone[] humanBones = BuildHumanoidBoneMap();
+        SkeletonBone[] skeletonBones = BuildValidTPose(humanBones);
+        description.human = humanBones;
+        description.skeleton = skeletonBones;
         description.armStretch = 0.05f;
         description.legStretch = 0.05f;
         description.upperArmTwist = 0.5f;
@@ -149,16 +149,19 @@ public static class YaeMikoPerformanceSetup
     private static bool HasExpectedHipMapping(ModelImporter importer)
     {
         if (importer == null) return false;
-        HumanBone hips = importer.humanDescription.human.FirstOrDefault(
+        HumanDescription description = importer.humanDescription;
+        HumanBone hips = description.human.FirstOrDefault(
             bone => bone.humanName == HumanTrait.BoneName[(int)HumanBodyBones.Hips]);
-        return hips.boneName == "グルーブ2";
+        SkeletonBone skeletonHips = description.skeleton.FirstOrDefault(bone => bone.name == "腰");
+        float hipRoll = Mathf.Abs(Mathf.DeltaAngle(0f, skeletonHips.rotation.eulerAngles.z));
+        return hips.boneName == "腰" && hipRoll < 0.1f;
     }
 
     private static HumanBone[] BuildHumanoidBoneMap()
     {
         return new[]
         {
-            Bone(HumanBodyBones.Hips, "グルーブ2"),
+            Bone(HumanBodyBones.Hips, "腰"),
             Bone(HumanBodyBones.Spine, "上半身"),
             Bone(HumanBodyBones.Chest, "上半身3"),
             Bone(HumanBodyBones.UpperChest, "上半身2"),
@@ -193,6 +196,56 @@ public static class YaeMikoPerformanceSetup
             boneName = modelBoneName,
             limit = new HumanLimit { useDefaultValues = true },
         };
+    }
+
+    private static SkeletonBone[] BuildValidTPose(HumanBone[] humanBones)
+    {
+        GameObject modelPrefab = AssetDatabase.LoadAssetAtPath<GameObject>(ModelPath);
+        Require(modelPrefab != null, "Yae Miko model prefab could not be loaded for T-Pose setup.");
+
+        Type setupTool = typeof(Editor).Assembly.GetType("UnityEditor.AvatarSetupTool");
+        Require(setupTool != null, "Unity Avatar T-Pose setup API is unavailable.");
+        BindingFlags flags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+        MethodInfo sampleBindPose = setupTool.GetMethod("SampleBindPose", flags);
+        MethodInfo getModelBones = setupTool.GetMethods(flags).Single(
+            method => method.Name == "GetModelBones" && method.GetParameters().Length == 3);
+        MethodInfo getHumanBones = setupTool.GetMethods(flags).Single(
+            method => method.Name == "GetHumanBones" &&
+                      method.GetParameters().Length == 2 &&
+                      method.GetParameters()[0].ParameterType == typeof(Dictionary<string, string>));
+        MethodInfo makePoseValid = setupTool.GetMethod("MakePoseValid", flags);
+        MethodInfo getSkeletonBones = setupTool.GetMethod("GetSkeletonBones", flags);
+        Require(sampleBindPose != null && makePoseValid != null && getSkeletonBones != null, "Unity Avatar pose methods are unavailable.");
+
+        GameObject instance = UnityEngine.Object.Instantiate(modelPrefab);
+        instance.hideFlags = HideFlags.HideAndDontSave;
+        try
+        {
+            sampleBindPose.Invoke(null, new object[] { instance });
+            object modelBones = getModelBones.Invoke(null, new object[] { instance.transform, true, null });
+            var mappings = humanBones.ToDictionary(bone => bone.humanName, bone => bone.boneName, StringComparer.Ordinal);
+            Array wrappers = getHumanBones.Invoke(null, new object[] { mappings, modelBones }) as Array;
+            Require(wrappers != null && wrappers.Length > 0, "Unity could not map the Yae Miko Humanoid bones.");
+            makePoseValid.Invoke(null, new object[] { wrappers });
+            SkeletonBone[] result = getSkeletonBones.Invoke(null, new object[] { instance.transform }) as SkeletonBone[];
+            Require(result != null && result.Length > 0, "Unity did not return a valid T-Pose skeleton.");
+            NormalizeHipRoll(result);
+            return result;
+        }
+        finally
+        {
+            UnityEngine.Object.DestroyImmediate(instance);
+        }
+    }
+
+    private static void NormalizeHipRoll(SkeletonBone[] skeletonBones)
+    {
+        int hipsIndex = Array.FindIndex(skeletonBones, bone => bone.name == "腰");
+        Require(hipsIndex >= 0, "Yae Miko T-Pose skeleton is missing its Hips bone.");
+        SkeletonBone hips = skeletonBones[hipsIndex];
+        Vector3 euler = hips.rotation.eulerAngles;
+        hips.rotation = Quaternion.Euler(euler.x, euler.y, 0f);
+        skeletonBones[hipsIndex] = hips;
     }
 
     private static Dictionary<string, AnimationClip> ConfigureAnimationImporters()
@@ -248,31 +301,7 @@ public static class YaeMikoPerformanceSetup
         return clips;
     }
 
-    private static AvatarMask BuildUpperBodyMask()
-    {
-        AvatarMask mask = AssetDatabase.LoadAssetAtPath<AvatarMask>(UpperBodyMaskPath);
-        if (mask == null)
-        {
-            mask = new AvatarMask { name = "YaeMikoUpperBody" };
-            AssetDatabase.CreateAsset(mask, UpperBodyMaskPath);
-        }
-
-        for (int index = 0; index < (int)AvatarMaskBodyPart.LastBodyPart; index++)
-        {
-            mask.SetHumanoidBodyPartActive((AvatarMaskBodyPart)index, false);
-        }
-        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Body, true);
-        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.Head, true);
-        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftArm, true);
-        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightArm, true);
-        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.LeftFingers, true);
-        mask.SetHumanoidBodyPartActive(AvatarMaskBodyPart.RightFingers, true);
-        EditorUtility.SetDirty(mask);
-        AssetDatabase.SaveAssets();
-        return mask;
-    }
-
-    private static AnimatorController BuildAnimatorController(Dictionary<string, AnimationClip> clips, AvatarMask upperBodyMask)
+    private static AnimatorController BuildAnimatorController(Dictionary<string, AnimationClip> clips)
     {
         AnimatorController controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
         if (controller == null)
@@ -280,45 +309,26 @@ public static class YaeMikoPerformanceSetup
             controller = AnimatorController.CreateAnimatorControllerAtPath(ControllerPath);
         }
 
-        while (controller.layers.Length < 2) controller.AddLayer("Gesture");
-        while (controller.layers.Length > 2) controller.RemoveLayer(controller.layers.Length - 1);
-
-        AnimatorControllerLayer baseLayer = controller.layers[0];
-        baseLayer.name = "Base Idle";
-        baseLayer.defaultWeight = 1f;
-        baseLayer.avatarMask = null;
-        AnimatorStateMachine baseStateMachine = baseLayer.stateMachine;
-        foreach (ChildAnimatorState childState in baseStateMachine.states.ToArray())
+        while (controller.layers.Length > 1) controller.RemoveLayer(controller.layers.Length - 1);
+        AnimatorControllerLayer layer = controller.layers[0];
+        layer.name = "Full Body Performance";
+        layer.defaultWeight = 1f;
+        layer.avatarMask = null;
+        AnimatorStateMachine stateMachine = layer.stateMachine;
+        foreach (ChildAnimatorState childState in stateMachine.states.ToArray())
         {
-            baseStateMachine.RemoveState(childState.state);
+            stateMachine.RemoveState(childState.state);
         }
-        AnimatorState idleState = baseStateMachine.AddState("idle", new Vector3(240f, 80f));
-        idleState.motion = clips["idle"];
-        idleState.writeDefaultValues = true;
-        baseStateMachine.defaultState = idleState;
 
-        AnimatorControllerLayer gestureLayer = controller.layers[1];
-        gestureLayer.name = "Upper Body Gesture";
-        gestureLayer.defaultWeight = 1f;
-        gestureLayer.blendingMode = AnimatorLayerBlendingMode.Override;
-        gestureLayer.avatarMask = upperBodyMask;
-        AnimatorStateMachine gestureStateMachine = gestureLayer.stateMachine;
-        foreach (ChildAnimatorState childState in gestureStateMachine.states.ToArray())
-        {
-            gestureStateMachine.RemoveState(childState.state);
-        }
-        AnimatorState gestureIdle = gestureStateMachine.AddState("gesture_idle", new Vector3(240f, 40f));
-        gestureIdle.motion = null;
-        gestureStateMachine.defaultState = gestureIdle;
-
-        for (int index = 1; index < ActionIds.Length; index++)
+        for (int index = 0; index < ActionIds.Length; index++)
         {
             string actionId = ActionIds[index];
-            AnimatorState state = gestureStateMachine.AddState(actionId, new Vector3(240f, 40f + index * 55f));
+            AnimatorState state = stateMachine.AddState(actionId, new Vector3(240f, 40f + index * 55f));
             state.motion = clips[actionId];
             state.writeDefaultValues = true;
+            if (actionId == "idle") stateMachine.defaultState = state;
         }
-        controller.layers = new[] { baseLayer, gestureLayer };
+        controller.layers = new[] { layer };
         EditorUtility.SetDirty(controller);
         AssetDatabase.SaveAssets();
         return controller;
@@ -390,7 +400,7 @@ public static class YaeMikoPerformanceSetup
     {
         return ActionIds.Select(actionId => new NpcPerformanceController.ActionPreset(
             actionId,
-            actionId == "idle" ? "gesture_idle" : actionId,
+            actionId,
             actionId == "idle" ? 0f : clips[actionId].length
         )).ToArray();
     }
