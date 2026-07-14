@@ -30,6 +30,14 @@ public class AnbiPlayerSmokeRunner : MonoBehaviour
             yield break;
         }
 
+        LogRigState("Idle", player.transform, visual, animator);
+        CaptureMainCamera("/tmp/anbi_player_idle.png");
+        if (!FeetAreGrounded(player.transform, visual))
+        {
+            complete(false, "Anbi's rendered feet are not aligned with the player ground point in Idle.");
+            yield break;
+        }
+
         int texturedMaterials = visual.GetComponentsInChildren<Renderer>(true)
             .SelectMany(renderer => renderer.sharedMaterials)
             .Where(material => material != null)
@@ -40,26 +48,41 @@ public class AnbiPlayerSmokeRunner : MonoBehaviour
             yield break;
         }
 
-        Quaternion[] idleLegs = GetLegRotations(animator);
-        animator.SetFloat(MoveSpeedId, 1f);
-        yield return new WaitForSeconds(0.2f);
-        if (!IsState(animator, "WalkStart"))
+        Quaternion[] idleLegs = GetLegRotations(visual);
+        Transform weaponBone = FindDescendant(visual, "Anbi_Weapon_01");
+        if (weaponBone == null)
         {
-            complete(false, $"Expected WalkStart after movement began, got {CurrentState(animator)}.");
+            complete(false, "Anbi weapon bone binding is missing.");
             yield break;
         }
-
-        yield return new WaitForSeconds(1.2f);
+        Quaternion idleWeaponRotation = weaponBone.localRotation;
+        Vector3 idleWeaponPosition = weaponBone.localPosition;
+        animator.SetFloat(MoveSpeedId, 1f);
+        yield return new WaitForSeconds(0.3f);
         if (!IsState(animator, "Walk"))
         {
             complete(false, $"Expected Walk after startup completed, got {CurrentState(animator)}.");
             yield break;
         }
 
-        float legDelta = GetLargestLegDelta(animator, idleLegs);
+        LogRigState("Walk", player.transform, visual, animator);
+
+        float legDelta = GetLargestLegDelta(visual, idleLegs);
         if (legDelta < 2f)
         {
             complete(false, $"Walk did not visibly animate the legs; max delta={legDelta:F2} degrees.");
+            yield break;
+        }
+        float weaponDelta = Quaternion.Angle(idleWeaponRotation, weaponBone.localRotation) +
+                            Vector3.Distance(idleWeaponPosition, weaponBone.localPosition) * 100f;
+        if (weaponDelta < 0.05f)
+        {
+            complete(false, "Walk did not animate the bound weapon bone.");
+            yield break;
+        }
+        if (!FeetAreGrounded(player.transform, visual, 0.2f))
+        {
+            complete(false, "Anbi's rendered feet are not aligned with the player ground point in Walk.");
             yield break;
         }
 
@@ -72,7 +95,7 @@ public class AnbiPlayerSmokeRunner : MonoBehaviour
             yield break;
         }
 
-        complete(true, $"Idle, WalkStart, Walk, textured materials ({texturedMaterials}), and leg motion ({legDelta:F1} deg) passed.");
+        complete(true, $"Idle/Walk, grounded feet, textured materials ({texturedMaterials}), leg motion ({legDelta:F1} deg), and weapon bones passed.");
     }
 
     private static bool IsState(Animator animator, string stateName)
@@ -85,17 +108,16 @@ public class AnbiPlayerSmokeRunner : MonoBehaviour
     {
         AnimatorStateInfo state = animator.GetCurrentAnimatorStateInfo(0);
         if (state.IsName("Idle")) return "Idle";
-        if (state.IsName("WalkStart")) return "WalkStart";
         if (state.IsName("Walk")) return "Walk";
         return $"hash:{state.shortNameHash}";
     }
 
-    private static Quaternion[] GetLegRotations(Animator animator)
+    private static Quaternion[] GetLegRotations(Transform visual)
     {
-        Transform leftUpper = animator.GetBoneTransform(HumanBodyBones.LeftUpperLeg);
-        Transform leftLower = animator.GetBoneTransform(HumanBodyBones.LeftLowerLeg);
-        Transform rightUpper = animator.GetBoneTransform(HumanBodyBones.RightUpperLeg);
-        Transform rightLower = animator.GetBoneTransform(HumanBodyBones.RightLowerLeg);
+        Transform leftUpper = FindDescendant(visual, "Bip001 L Thigh");
+        Transform leftLower = FindDescendant(visual, "Bip001 L Calf");
+        Transform rightUpper = FindDescendant(visual, "Bip001 R Thigh");
+        Transform rightLower = FindDescendant(visual, "Bip001 R Calf");
         if (leftUpper == null || leftLower == null || rightUpper == null || rightLower == null)
         {
             return Array.Empty<Quaternion>();
@@ -103,9 +125,9 @@ public class AnbiPlayerSmokeRunner : MonoBehaviour
         return new[] { leftUpper.localRotation, leftLower.localRotation, rightUpper.localRotation, rightLower.localRotation };
     }
 
-    private static float GetLargestLegDelta(Animator animator, Quaternion[] reference)
+    private static float GetLargestLegDelta(Transform visual, Quaternion[] reference)
     {
-        Quaternion[] current = GetLegRotations(animator);
+        Quaternion[] current = GetLegRotations(visual);
         if (reference.Length != current.Length || reference.Length == 0) return 0f;
         float largest = 0f;
         for (int index = 0; index < current.Length; index++)
@@ -133,5 +155,39 @@ public class AnbiPlayerSmokeRunner : MonoBehaviour
         RenderTexture.active = previousActive;
         UnityEngine.Object.Destroy(renderTexture);
         UnityEngine.Object.Destroy(texture);
+    }
+
+    private static void LogRigState(string state, Transform player, Transform visual, Animator animator)
+    {
+        Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(true);
+        Bounds bounds = renderers[0].bounds;
+        foreach (Renderer renderer in renderers.Skip(1)) bounds.Encapsulate(renderer.bounds);
+        Transform leftFoot = FindDescendant(visual, "Bip001 L Foot");
+        Transform rightFoot = FindDescendant(visual, "Bip001 R Foot");
+        Transform hips = FindDescendant(visual, "Bip001 Pelvis");
+        Transform weapon = FindDescendant(visual, "Anbi_Weapon_01");
+        Debug.Log(
+            $"ANBI_RIG state={state} ground={player.position.y:F3} bounds_min={bounds.min.y:F3} " +
+            $"left_foot={(leftFoot != null ? leftFoot.position.y : -1f):F3} " +
+            $"right_foot={(rightFoot != null ? rightFoot.position.y : -1f):F3} " +
+            $"hips={(hips != null ? hips.position.y : -1f):F3} " +
+            $"weapon={(weapon != null ? weapon.position.ToString("F3") : "missing")}");
+    }
+
+    private static bool FeetAreGrounded(Transform player, Transform visual, float tolerance = 0.12f)
+    {
+        Renderer[] renderers = visual.GetComponentsInChildren<Renderer>(true);
+        Bounds bounds = renderers[0].bounds;
+        foreach (Renderer renderer in renderers.Skip(1)) bounds.Encapsulate(renderer.bounds);
+        return Mathf.Abs(bounds.min.y - player.position.y) <= tolerance;
+    }
+
+    private static Transform FindDescendant(Transform root, string name)
+    {
+        foreach (Transform child in root.GetComponentsInChildren<Transform>(true))
+        {
+            if (child.name == name) return child;
+        }
+        return null;
     }
 }

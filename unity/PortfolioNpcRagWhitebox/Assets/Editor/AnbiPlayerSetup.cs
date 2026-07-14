@@ -21,7 +21,6 @@ public static class AnbiPlayerSetup
     private static readonly ClipDefinition[] Clips =
     {
         new ClipDefinition("Idle", AnimationFolder + "/Anbi_Idle.FBX", true),
-        new ClipDefinition("WalkStart", AnimationFolder + "/Anbi_WalkStart.FBX", false),
         new ClipDefinition("Walk", AnimationFolder + "/Anbi_Walk.FBX", true),
     };
 
@@ -47,7 +46,7 @@ public static class AnbiPlayerSetup
     public static void Validate()
     {
         Avatar avatar = LoadAvatar(ModelPath);
-        Require(avatar != null && avatar.isValid && avatar.isHuman, "Anbi model needs a valid Humanoid Avatar.");
+        Require(avatar != null && avatar.isValid && !avatar.isHuman, "Anbi model needs a valid Generic Avatar.");
 
         AnimatorController controller = AssetDatabase.LoadAssetAtPath<AnimatorController>(ControllerPath);
         Require(controller != null, "Anbi locomotion controller is missing.");
@@ -58,6 +57,9 @@ public static class AnbiPlayerSetup
             AnimationClip clip = LoadClip(definition.path, definition.name);
             Require(clip != null, $"Animation clip {definition.name} is missing.");
             Require(clip.isLooping == definition.loop, $"Animation loop setting is wrong for {definition.name}.");
+            Require(
+                AnimationUtility.GetCurveBindings(clip).Any(binding => IsWeaponPath(binding.path)),
+                $"Animation clip {definition.name} is missing weapon-bone curves.");
         }
 
         Scene scene = EditorSceneManager.OpenScene(ScenePath, OpenSceneMode.Single);
@@ -83,7 +85,7 @@ public static class AnbiPlayerSetup
         ModelImporter importer = AssetImporter.GetAtPath(ModelPath) as ModelImporter;
         Require(importer != null, "Anbi model importer was not found.");
         importer.globalScale = 100f;
-        importer.animationType = ModelImporterAnimationType.Human;
+        importer.animationType = ModelImporterAnimationType.Generic;
         importer.avatarSetup = ModelImporterAvatarSetup.CreateFromThisModel;
         importer.importAnimation = false;
         importer.importBlendShapes = true;
@@ -102,7 +104,7 @@ public static class AnbiPlayerSetup
         importer.SaveAndReimport();
 
         Avatar avatar = LoadAvatar(ModelPath);
-        Require(avatar != null && avatar.isValid && avatar.isHuman, "Unity could not create a valid Humanoid Avatar for Anbi.");
+        Require(avatar != null && avatar.isValid && !avatar.isHuman, "Unity could not create a valid Generic Avatar for Anbi.");
         return avatar;
     }
 
@@ -111,7 +113,7 @@ public static class AnbiPlayerSetup
         ModelImporter importer = AssetImporter.GetAtPath(definition.path) as ModelImporter;
         Require(importer != null, $"Animation importer was not found: {definition.path}");
         importer.globalScale = 100f;
-        importer.animationType = ModelImporterAnimationType.Human;
+        importer.animationType = ModelImporterAnimationType.Generic;
         importer.avatarSetup = ModelImporterAvatarSetup.CopyFromOther;
         importer.sourceAvatar = avatar;
         importer.importAnimation = true;
@@ -150,16 +152,12 @@ public static class AnbiPlayerSetup
         controller.AddParameter("MoveSpeed", AnimatorControllerParameterType.Float);
         AnimatorStateMachine stateMachine = controller.layers[0].stateMachine;
         AnimatorState idle = stateMachine.AddState("Idle");
-        AnimatorState walkStart = stateMachine.AddState("WalkStart");
         AnimatorState walk = stateMachine.AddState("Walk");
         idle.motion = clips[0];
-        walkStart.motion = clips[1];
-        walk.motion = clips[2];
+        walk.motion = clips[1];
         stateMachine.defaultState = idle;
 
-        ConfigureTransition(idle.AddTransition(walkStart), false, 0f, 0.12f, AnimatorConditionMode.Greater, 0.08f);
-        ConfigureTransition(walkStart.AddTransition(idle), false, 0f, 0.12f, AnimatorConditionMode.Less, 0.08f);
-        ConfigureTransition(walkStart.AddTransition(walk), true, 0.86f, 0.14f, AnimatorConditionMode.Greater, 0.08f);
+        ConfigureTransition(idle.AddTransition(walk), false, 0f, 0.16f, AnimatorConditionMode.Greater, 0.08f);
         ConfigureTransition(walk.AddTransition(idle), false, 0f, 0.16f, AnimatorConditionMode.Less, 0.08f);
         EditorUtility.SetDirty(controller);
         return controller;
@@ -261,6 +259,12 @@ public static class AnbiPlayerSetup
         return AssetDatabase.LoadAllAssetsAtPath(path)
             .OfType<AnimationClip>()
             .FirstOrDefault(clip => clip.name == name);
+    }
+
+    private static bool IsWeaponPath(string path)
+    {
+        return path.IndexOf("Anbi_Weapon", StringComparison.OrdinalIgnoreCase) >= 0 ||
+               path.IndexOf("Weapon_Bone", StringComparison.OrdinalIgnoreCase) >= 0;
     }
 
     private static void Require(bool condition, string message)
