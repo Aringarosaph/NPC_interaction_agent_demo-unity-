@@ -7,6 +7,7 @@
 ## 核心亮点
 
 - **Unity 实机链路**：第三人称鼠标视角、WASD 移动、NPC 距离检测、中文名字牌、玩家/NPC 气泡、输入框和 agent debug 面板。
+- **受控角色表演**：八重神子的回复可从 6 档 Shape Key 表情和 6 个 Humanoid 原地动作中选择；Unity 平滑切换表情、自动眨眼，并在一次性动作后回到待机。
 - **后端 Agent Loop**：`retrieve -> memory -> state snapshot -> planner -> validated tools -> response -> self-check -> trace`。
 - **可验证 RAG**：每个 NPC 独立 profile、knowledge chunks、dialogue examples、memory seed，trace 会返回 `used_knowledge_ids`。
 - **长期记忆策略**：SQLite 本地记忆支持偏好写入/召回，称呼偏好会 supersede 旧记录，敏感实现信息不会落库。
@@ -31,7 +32,7 @@ flowchart LR
     G --> J["LLM / Mock JSON"]
     J --> K["Normalizer + Self Check"]
     K --> L["Agent Dialogue Response + Trace"]
-    L --> M["Unity Bubbles + Debug Panel"]
+    L --> M["Unity Bubbles + Performance Controller + Debug Panel"]
 ```
 
 ## 快速开始
@@ -115,8 +116,8 @@ curl -X POST http://127.0.0.1:8008/api/dialogue \
   "utterances": [
     {
       "text": "谢谢你，博士。",
-      "emotion": "neutral",
-      "action": "look_at_player",
+      "expression": "neutral",
+      "action": "idle",
       "delay_ms": 500
     }
   ],
@@ -222,6 +223,16 @@ Unity Play Mode 后端联调 smoke，需先启动后端：
   -logFile /tmp/npc_unity_playmode_backend_smoke.log
 ```
 
+八重神子角色表演 Play Mode smoke，不依赖后端：
+
+```bash
+"/Applications/Unity/Hub/Editor/6000.4.2f1/Unity.app/Contents/MacOS/Unity" \
+  -batchmode \
+  -projectPath "unity/PortfolioNpcRagWhitebox" \
+  -executeMethod YaeMikoPerformancePlayModeSmoke.Run \
+  -logFile /tmp/npc_yae_performance_playmode.log
+```
+
 ## 最新评测摘要
 
 最新报告见 `eval/reports/latest_report.md`。
@@ -242,7 +253,7 @@ Unity Play Mode 后端联调 smoke，需先启动后端：
 
 | 能力点 | 项目体现 |
 | --- | --- |
-| 游戏客户端集成 | Unity Play Mode 场景、角色距离检测、输入框、气泡、调试 UI |
+| 游戏客户端集成 | Unity Play Mode 场景、角色距离检测、输入框、气泡、调试 UI、Shape Key 表情与 Humanoid 动作 |
 | LLM/RAG 工程 | 角色 profile、知识 chunk、TF-IDF 检索、边界 chunk、trace 可解释 |
 | Agent 架构 | Planner、工具注册表、世界状态、事件回传、self-check reflection |
 | 后端工程 | FastAPI、Pydantic schema、SQLite memory/state、可测试的服务边界 |
@@ -262,7 +273,7 @@ Unity Play Mode 后端联调 smoke，需先启动后端：
 
 - 当前知识库规模较小，重点是展示可控链路，不追求大规模百科覆盖。
 - 当前 planner 是确定性轻量规则，适合 demo 与测试；后续可接入受限 JSON planner，但仍应由后端验证工具调用。
-- 当前 Unity 只展示基础气泡与 debug UI；后续可把 `emotion/action` 接入动画状态机。
+- 当前角色表演资源集中在八重神子，阿米娅和今汐会稳定回退为 `neutral + idle`；后续可以按同一契约补充各自资源。
 - 当前 eval 是本地黑盒行为评测；后续可接入 CI，但本轮升级暂不包含 CI。
 
 ## License

@@ -26,6 +26,7 @@
 - [x] README and interview guide refreshed as interviewer-facing Chinese documentation.
 - [x] Public API wording unified around `/api/dialogue` and `/api/health`.
 - [x] Unity debug panel reset button clears local demo memory, quest, relationship, inventory, and world event state.
+- [x] Yae Miko dialogue responses drive six constrained Shape Key expressions and six retargeted Humanoid standing actions, with neutral/idle fallback.
 
 ## Public API
 
@@ -45,6 +46,7 @@ Unity should call only `POST /api/dialogue` for runtime NPC interaction.
 - Cross-world, AI, Unity, backend, and system-prompt questions should hit boundary handling.
 - Keep `.env`, local SQLite runtime files, Unity generated folders, unused imported art, and TMP dynamic font cache out of commits.
 - Use Git LFS for large Unity art assets that are intentionally tracked.
+- Keep runtime performance labels constrained to the public `expression` and `action` enums; Unity asset names remain an internal mapping detail.
 - Update this file whenever a phase starts, completes, or changes scope.
 
 ## Local Environment Gaps
@@ -82,6 +84,17 @@ Unity should call only `POST /api/dialogue` for runtime NPC interaction.
   - Unity batchmode `ArtSceneDialogueBinder.BindArtSceneDialogue`; completed with `Art scene dialogue bindings refreshed.`
   - Unity batchmode `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed with `Whitebox scene validation passed.`
   - Unity Play Mode backend smoke hit `POST /api/dialogue` and `POST /api/debug/reset`, then passed with `reset ok.`
+- 2026-07-14: Yae Miko constrained expression and action playback added and validated:
+  - Backend response contract migrated from `emotion` to six-value `expression`; six-value `action` is validated and limited to one non-idle action per response.
+  - `cd backend && .venv/bin/python -m pytest -q`; 43 tests and 3 subtests passed.
+  - `cd backend && .venv/bin/python -m unittest discover -s tests`; 39 tests passed, with known non-fatal SQLite ResourceWarnings from process-level app stores.
+  - `cd backend && .venv/bin/python -m compileall app tests`; passed.
+  - Six Mixamo FBX clips imported as Humanoid and tracked through Git LFS; the MMD-style Yae Miko skeleton is explicitly mapped to a valid Humanoid Avatar.
+  - `YaeMikoPerformanceSetup.Validate`; passed with six expression presets, six Animator states, and all required BlendShapes resolved.
+  - `WhiteboxSceneBuilder.ValidateWhiteboxScene`; passed.
+  - `YaeMikoPerformancePlayModeSmoke.Run`; applied the `teasing` Shape Key weights and entered the `nod` Animator state successfully.
+  - Real LLM dialogue returned `amused + soft_laugh` followed by `teasing + idle`, confirming semantic selection and the one-action-per-response limit.
+  - `BackendDialoguePlayModeSmoke.Run`; the unified dialogue and reset flow remained compatible with the new response contract.
 
 ## Current User-Facing Summary
 

@@ -37,6 +37,8 @@ curl -X POST http://127.0.0.1:8008/api/dialogue \
   -d '{"schema_version":"dialogue_request.agent","session_id":"s1","player_id":"local_player","npc_id":"arknights_amiya","player_text":"你知道八重神子吗？","distance_m":2.0,"is_in_range":true,"world_state":{"location_id":"portfolio_whitebox_room","game_time_label":"demo","quest_stage":0,"relationship_score":0,"debug_enabled":true}}'
 ```
 
+每句 `utterance` 都包含受限表现字段：`expression` 为 `neutral|soft_smile|amused|teasing|concerned|stern`，`action` 为 `idle|nod|soft_laugh|thoughtful|dismissive|hand_on_chest`。当前只有八重神子启用专用表现资源；其他角色由后端归一化为 `neutral + idle`。
+
 Mock dialogue regression tests:
 
 ```bash
