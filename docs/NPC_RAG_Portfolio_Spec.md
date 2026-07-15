@@ -35,4 +35,4 @@
 - Debug 能看到命中 knowledge chunk。
 - 至少一个偏好记忆能写入并回忆。
 
-更多细节见 `docs/` 和 `codex_tasks/`。
+更多细节见当前目录及 `codex_tasks/`。

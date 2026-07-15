@@ -124,7 +124,7 @@ Implemented:
 - Chinese interviewer-facing root `README.md`.
 - `docs/agent_portfolio_interview_guide.md`.
 - Current architecture and data-contract docs.
-- Final validation log in `PROJECT_STATUS.md`.
+- Final validation log in `docs/PROJECT_STATUS.md`.
 
 ## 5. Canonical Contracts
 

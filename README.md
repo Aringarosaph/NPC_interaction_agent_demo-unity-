@@ -280,7 +280,7 @@ Unity Play Mode 后端联调 smoke，需先启动后端：
 - `data/npcs/`：三名 NPC 的 profile、knowledge、examples、memory seed。
 - `schemas/`：对话请求、Agent 响应、trace 等数据契约示例。
 - `eval/`：行为评测 runner、case YAML 和最新报告。
-- `docs/`：架构、后端、Unity、prompt、评测、版权和执行计划文档。
+- [`docs/`](docs/README.md)：方案总览、项目状态、架构、后端、Unity、prompt、评测、版权和历史执行记录。
 
 ## 限制与后续方向
 

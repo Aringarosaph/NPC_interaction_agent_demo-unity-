@@ -15,12 +15,12 @@
   ],
   "recommended_first_file": "README.md",
   "codex_entrypoints": [
-    "codex_tasks/phase_00_bootstrap.md",
-    "codex_tasks/phase_01_backend_mock_dialogue.md",
-    "codex_tasks/phase_02_retrieval_and_debug.md",
-    "codex_tasks/phase_03_deepseek_json_output.md",
-    "codex_tasks/phase_04_memory_store.md",
-    "codex_tasks/phase_05_unity_whitebox.md",
-    "codex_tasks/phase_06_portfolio_polish.md"
+    "docs/codex_tasks/phase_00_bootstrap.md",
+    "docs/codex_tasks/phase_01_backend_mock_dialogue.md",
+    "docs/codex_tasks/phase_02_retrieval_and_debug.md",
+    "docs/codex_tasks/phase_03_deepseek_json_output.md",
+    "docs/codex_tasks/phase_04_memory_store.md",
+    "docs/codex_tasks/phase_05_unity_whitebox.md",
+    "docs/codex_tasks/phase_06_portfolio_polish.md"
   ]
 }
